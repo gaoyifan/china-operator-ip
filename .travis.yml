@@ -1,0 +1,13 @@
+sudo: required
+services:
+    - docker
+language: rust
+env:
+  global:
+  - BGPTOOLS_VERSION=0.0.1
+before_script:
+  - cargo install --vers $BGPTOOLS_VERSION bgptools
+  - docker pull gaoyifan/cidrmerge
+  - docker pull gaoyifan/bgpdump
+script:
+  - ./generate.sh
