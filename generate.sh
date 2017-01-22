@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 
 if [[ -f /etc/kern_loader.conf ]]; then
 	alias grep='ggrep'
