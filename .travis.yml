@@ -12,3 +12,10 @@ before_script:
   - docker pull gaoyifan/bgpdump
 script:
   - ./generate.sh
+deploy:
+  provider: script
+  script: ./upload.sh
+  skip_cleanup: true
+  on:
+    branch: master
+    condition: $TRAVIS_EVENT_TYPE == cron
