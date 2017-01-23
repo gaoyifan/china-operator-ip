@@ -10,7 +10,7 @@ get_asn(){
 	unset COUNTRY
 	source $CONF_FILE
 	grep -P "${COUNTRY}\$" asnames.txt | 
-	grep -Pi $PATTERN | 
+	grep -Pi "$PATTERN" | 
 	awk '{print $1}' | 
 	while read ASN; do 
 		ASN=${ASN#AS}
