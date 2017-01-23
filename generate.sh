@@ -26,7 +26,9 @@ get_asn(){
 prepare_data(){
 	wget http://bgp.potaroo.net/as1221/asnames.txt
 	wget http://archive.routeviews.org/dnszones/rib.bz2
+	>&2 echo "runing bgpdump ..."
 	docker run -it --rm -v `pwd`:/bgpdump -w /bgpdump gaoyifan/bgpdump bgpdump -m -O rib.txt rib.bz2
+	>&2 echo "done"
 }
 set -e
 [[ $DEBUG != true ]] && prepare_data
@@ -35,5 +37,7 @@ find operator -type f -name '*.conf' |
 while read file; do
 	operator=${file%.*}
 	operator=${operator##*/}
+	>&2 echo "generating IP list of $operator ..."
 	get_asn $file | xargs bgptools | docker run -i --rm gaoyifan/cidrmerge > result/$operator.txt
+	>&2 echo "done"
 done
