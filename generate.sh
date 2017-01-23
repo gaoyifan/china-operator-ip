@@ -52,8 +52,8 @@ while read file; do
 	(
 		sum=0
 		while read n; do
-			s=$((32 - ${n}))
-			sum=$(($sum + 1<<$s))
+			((s=32-n))
+			((sum+=1<<s))
 		done
 		echo $sum
 	)
