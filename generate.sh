@@ -44,7 +44,7 @@ done
 
 # count the number of IP
 cd result
-ls | 
+ls *.txt | 
 while read file; do 
 	echo ${file%.*}
 	cat $file | 
