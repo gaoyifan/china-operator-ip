@@ -10,18 +10,20 @@
 * 由BGP/ASN数据分析得到
 * 代码开源，数据免费
 
+## 常见使用场景
+
+- DNS分域解析
+- 多出口路由器路由表
+
 ## 收录的运营商
 
-* 中国电信
-* 中国移动
-* 中国联通
-* 中国铁通
-* 教育网
-* 科技网
+* 中国电信(chinanet)
+* 中国移动(cmcc)
+* 中国联通(unicom)
+* 中国铁通(tietong)
+* 教育网(cernet)
+* 科技网(cstnet)
 
 ## 如何获取数据
 
 IP列表（CIDR格式）保存在仓库的[result目录](https://github.com/gaoyifan/china-operator-ip/tree/master/result)中。其中`result/stat`存储了各运营商的IP数量的统计信息。
-
-
-
