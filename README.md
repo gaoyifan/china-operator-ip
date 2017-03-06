@@ -26,4 +26,25 @@
 
 ## 如何获取数据
 
+### 直接下载
+
 IP列表（CIDR格式）保存在仓库的[result目录](https://github.com/gaoyifan/china-operator-ip/tree/master/result)中。其中`result/stat`存储了各运营商的IP数量的统计信息。
+
+### 从BGP数据生成
+
+#### 安装依赖
+
+* [bgptools](https://github.com/gaoyifan/bgptools) (`cargo install bgptools `)
+* [docker](https://www.docker.com) (`curl -sSL https://get.docker.com | sh`)
+
+#### 生成IP列表
+
+```shell
+./generate.sh
+```
+
+#### 统计IP数量
+
+```shell
+./stat.sh
+```
