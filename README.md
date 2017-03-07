@@ -28,7 +28,7 @@
 
 ### 直接下载
 
-IP列表（CIDR格式）保存在仓库的[result目录](https://github.com/gaoyifan/china-operator-ip/tree/master/result)中。其中`result/stat`存储了各运营商的IP数量的统计信息。
+IP列表（CIDR格式）保存在仓库的[ip-lists分支](https://github.com/gaoyifan/china-operator-ip/tree/ip-lists)中。其中`stat`存储了各运营商的IP数量的统计信息。
 
 ### 从BGP数据生成
 
