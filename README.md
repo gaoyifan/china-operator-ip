@@ -20,7 +20,7 @@
 * 科技网(cstnet)
 * 鹏博士(drpeng) <试验阶段>
 
-*P.S. 鹏博士集团（包括：鹏博士数据、北京电信通、长城宽带、宽带通）的IP地址并非全都由独立的自治域做广播，目前大部分地址仍由电信、联通、CNNIC代为广播。故列表(`drpeng.txt`)中的地址仅为鹏博士拥有的部分IP地址，且这些IP同时具有电信、联通两个上级出口。详见[issue #2](https://github.com/gaoyifan/china-operator-ip/issues/2).*
+*P.S. 鹏博士集团（包括：鹏博士数据、北京电信通、长城宽带、宽带通）的IP地址并非全都由独立的自治域做广播，目前大部分地址仍由电信、联通、科技网代为广播。故[列表](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/drpeng.txt)中的地址仅为鹏博士拥有的部分IP地址，且这些IP同时具有电信、联通两个上级出口。详见[issue #2](https://github.com/gaoyifan/china-operator-ip/issues/2).*
 
 ## 如何获取数据
 
