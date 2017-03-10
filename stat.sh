@@ -16,4 +16,4 @@ while read file; do
 		echo $sum
 	)
 	echo
-done > stat
+done | tee stat
