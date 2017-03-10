@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+source common.sh
 cd result
 ls *.txt | 
 while read file; do 
