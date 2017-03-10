@@ -13,16 +13,7 @@ get_asn(){
 	source $CONF_FILE
 	grep -P "${COUNTRY}\$" asnames.txt | 
 	grep -Pi "$PATTERN" | 
-	awk '{print $1}' | 
-	while read ASN; do 
-		ASN=${ASN#AS}
-		if grep '\.' <(echo $ASN) > /dev/null; then 
-			ASN_HIGH=${ASN%.*}
-			ASN_LOW=${ASN#*.}
-			ASN=$((ASN_HIGH * 65536 + ASN_LOW))
-		fi
-		echo $ASN
-	done
+	awk '{gsub(/AS/, ""); print $1 }'
 }
 
 prepare_data(){
