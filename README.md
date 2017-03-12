@@ -1,14 +1,8 @@
-#中国运营商IP地址列表
+#中国运营商IP地址库
 
-依据中国网络运营商分类的IP地址列表
+依据中国网络运营商分类的IP地址库，由BGP/ASN数据分析得到
 
 (*本项目仍在开发阶段，数据已经可用，代码和文档有待完善*)
-
-## 特点
-
-* 由BGP/ASN数据分析得到
-* 每日更新
-* 代码开源，数据免费
 
 ## 收录的运营商
 
@@ -26,7 +20,9 @@
 
 ### 使用预生成结果
 
-IP列表（CIDR格式）保存在仓库的[ip-lists分支](https://github.com/gaoyifan/china-operator-ip/tree/ip-lists)中，[Travis CI](https://travis-ci.org)每日自动更新。其中`stat`存储了各运营商的IP数量的统计信息。
+IP列表（CIDR格式）保存在仓库的[ip-lists分支](https://github.com/gaoyifan/china-operator-ip/tree/ip-lists)中，[Travis CI](https://travis-ci.org)每日自动更新。
+
+P.S. [stat文件](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/stat)记录了各运营商的IP数量的统计信息。
 
 ### 从BGP数据生成
 
@@ -50,3 +46,13 @@ IP列表（CIDR格式）保存在仓库的[ip-lists分支](https://github.com/ga
 
 - DNS分域解析
 - 多出口路由器路由表
+
+## 致谢
+
+* 感谢[boj](https://ring0.me)师兄提出的[设计思路](https://github.com/ustclug/discussions/issues/79#issuecomment-267958775)
+* 感谢[cidrmerge](http://cidrmerge.sourceforge.net)提供高效的IP地址合并工具
+* 感谢[bgpdump](https://bitbucket.org/ripencc/bgpdump/wiki/Home)提供rib数据的读取工具
+
+## 协议
+
+本项目使用[MIT](LICENSE)协议。
