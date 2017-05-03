@@ -34,6 +34,10 @@
 
 IP列表（CIDR格式）保存在仓库的[ip-lists分支](https://github.com/gaoyifan/china-operator-ip/tree/ip-lists)中，Travis CI每日自动更新。
 
+```sh
+git clone -b ip-lists https://github.com/gaoyifan/china-operator-ip.git
+```
+
 P.S. [stat文件](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/stat)记录了各运营商的IP数量的统计信息。
 
 ### 从BGP数据生成
