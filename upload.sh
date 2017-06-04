@@ -8,4 +8,5 @@ git config user.email $GIT_USER_EMAIL
 git add .
 git commit -m "update $(date +%Y-%m-%d)"
 git push -q "https://${GH_TOKEN}@${GH_REF}" ip-lists:ip-lists
+git push -q "https://${GH_TOKEN}@${GH_REF}" ip-lists:gh-pages
 
