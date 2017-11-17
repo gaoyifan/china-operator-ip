@@ -70,7 +70,4 @@ P.S. [stat文件](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/st
 
 ## 协议
 
-本项目使用[MIT](LICENSE)协议。
-
-## License
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgaoyifan%2Fchina-operator-ip.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgaoyifan%2Fchina-operator-ip?ref=badge_large)
