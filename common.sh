@@ -17,8 +17,8 @@ get_asn(){
 }
 
 prepare_data(){
-	wget http://bgp.potaroo.net/as1221/asnames.txt -O asnames.txt
-	wget http://archive.routeviews.org/dnszones/rib.bz2 -O rib.bz2
+	curl -sSLo asnames.txt http://bgp.potaroo.net/as1221/asnames.txt
+	curl -sSLo rib.bz2 http://archive.routeviews.org/dnszones/rib.bz2
 	log_info "runing bgpdump ..."
 	docker run -it --rm -v `pwd`:/bgpdump -w /bgpdump gaoyifan/bgpdump bgpdump -m -O rib.txt rib.bz2
 	log_info "done"
