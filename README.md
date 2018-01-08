@@ -60,6 +60,31 @@ P.S. [stat文件](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/st
 ```shell
 ./stat.sh
 ```
+## 查询 IP 属于哪一个运营商
+
+注：查询结果只取决于本项目的 IP 列表，国外 IP 会直接返回查不到，保留地址等特殊 IP 也没有做特殊处理。
+
+### 使用方法
+
+构建并运行 Server:
+```
+# 把项目 clone 到 $GOPATH 中
+go get -u
+# go test
+go build
+git checkout ip-lists
+./china-operator-ip
+```
+
+查询方式为访问 `http://127.0.0.1:10080/{ip}`
+
+比如执行 `curl http://127.0.0.1:10080/202.38.64.1`，应该会看到如下输出
+
+```
+$ curl http://127.0.0.1:10080/202.38.64.1
+202.38.64.1 属于 教育网
+```
+
 ## 致谢
 
 * 感谢[boj](https://ring0.me)师兄提出的[设计建议](https://github.com/ustclug/discussions/issues/79#issuecomment-267958775)
