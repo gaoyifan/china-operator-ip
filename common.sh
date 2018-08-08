@@ -10,9 +10,12 @@ get_asn(){
 	local CONF_FILE=$1
 	unset PATTERN
 	unset COUNTRY
+	unset EXCLUDE
 	source $CONF_FILE
-	grep -P "${COUNTRY}\$" asnames.txt | 
-	grep -Pi "$PATTERN" | 
+	EXCLUDE=${EXCLUDE:-"^$"}
+	grep -P "${COUNTRY}\$" asnames.txt |
+	grep -Pi "$PATTERN" |
+	grep -vPi "$EXCLUDE" |
 	awk '{gsub(/AS/, ""); print $1 }'
 }
 
