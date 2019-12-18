@@ -23,7 +23,7 @@ prepare_data(){
 	curl -sSL https://bgp.potaroo.net/cidr/autnums.html | awk '-F[<>]' '{print $3,$5}' | grep '^AS' > asnames.txt
 	MONTH4=$(lftp -e 'cls -1;exit' http://archive.routeviews.org/route-views4/bgpdata/  2>/dev/null | sort | tail -n 1)
 	LATEST4=$(lftp -e 'cls -1;exit' http://archive.routeviews.org/route-views4/bgpdata/$MONTH4/RIBS/  2>/dev/null | sort | tail -n 1)
-	curl -sSLo rib.bz2 "http://archive.routeviews.org/route-views6/bgpdata/$MONTH4/RIBS/$LATEST4"
+	curl -sSLo rib.bz2 "http://archive.routeviews.org/route-views4/bgpdata/$MONTH4/RIBS/$LATEST4"
 	MONTH6=$(lftp -e 'cls -1;exit' http://archive.routeviews.org/route-views6/bgpdata/  2>/dev/null | sort | tail -n 1)
 	LATEST6=$(lftp -e 'cls -1;exit' http://archive.routeviews.org/route-views6/bgpdata/$MONTH6/RIBS/  2>/dev/null | sort | tail -n 1)
 	curl -sSLo rib6.bz2 "http://archive.routeviews.org/route-views6/bgpdata/$MONTH6/RIBS/$LATEST6"
