@@ -21,8 +21,14 @@ get_asn(){
 
 prepare_data(){
 	curl -sSL https://bgp.potaroo.net/cidr/autnums.html | awk '-F[<>]' '{print $3,$5}' | grep '^AS' > asnames.txt
-	curl -sSLo rib.bz2 http://archive.routeviews.org/dnszones/rib.bz2
+	MONTH4=$(lftp -e 'cls -1;exit' http://archive.routeviews.org/route-views4/bgpdata/  2>/dev/null | sort | tail -n 1)
+	LATEST4=$(lftp -e 'cls -1;exit' http://archive.routeviews.org/route-views4/bgpdata/$MONTH4/RIBS/  2>/dev/null | sort | tail -n 1)
+	curl -sSLo rib.bz2 "http://archive.routeviews.org/route-views6/bgpdata/$MONTH4/RIBS/$LATEST4"
+	MONTH6=$(lftp -e 'cls -1;exit' http://archive.routeviews.org/route-views6/bgpdata/  2>/dev/null | sort | tail -n 1)
+	LATEST6=$(lftp -e 'cls -1;exit' http://archive.routeviews.org/route-views6/bgpdata/$MONTH6/RIBS/  2>/dev/null | sort | tail -n 1)
+	curl -sSLo rib6.bz2 "http://archive.routeviews.org/route-views6/bgpdata/$MONTH6/RIBS/$LATEST6"
 	log_info "runing bgpdump ..."
 	docker run -it --rm -v `pwd`:/bgpdump -w /bgpdump gaoyifan/bgpdump bgpdump -m -O rib.txt rib.bz2
+	docker run -it --rm -v `pwd`:/bgpdump -w /bgpdump gaoyifan/bgpdump bgpdump -m -O rib6.txt rib6.bz2
 	log_info "done"
 }
