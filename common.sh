@@ -20,7 +20,7 @@ get_asn(){
 }
 
 prepare_data(){
-	curl -sSLo asnames.txt http://bgp.potaroo.net/as1221/asnames.txt
+	curl -sSL https://bgp.potaroo.net/cidr/autnums.html | awk '-F[<>]' '{print $3,$5}' | grep '^AS' > asnames.txt
 	curl -sSLo rib.bz2 http://archive.routeviews.org/dnszones/rib.bz2
 	log_info "runing bgpdump ..."
 	docker run -it --rm -v `pwd`:/bgpdump -w /bgpdump gaoyifan/bgpdump bgpdump -m -O rib.txt rib.bz2
