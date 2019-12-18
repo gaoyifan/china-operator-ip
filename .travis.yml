@@ -4,8 +4,9 @@ services:
 language: rust
 env:
   global:
-  - BGPTOOLS_VERSION=0.0.1
+  - BGPTOOLS_VERSION=0.0.2
 before_script:
+  - apt update && apt install lftp
   - cargo install --vers $BGPTOOLS_VERSION bgptools
   - export PATH=$PATH:/home/travis/.cargo/bin
   - docker pull gaoyifan/cidrmerge
