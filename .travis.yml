@@ -1,14 +1,19 @@
 sudo: required
+dist: bionic
+addons:
+    apt:
+        packages:
+          - lftp
 services:
     - docker
 language: rust
 env:
   global:
-  - BGPTOOLS_VERSION=0.0.1
+  - BGPTOOLS_VERSION=0.0.2
 before_script:
   - cargo install --vers $BGPTOOLS_VERSION bgptools
   - export PATH=$PATH:/home/travis/.cargo/bin
-  - docker pull gaoyifan/cidrmerge
+  - docker pull yangzhaofengsteven/cidr-merge
   - docker pull gaoyifan/bgpdump
 script:
   - ./generate.sh
