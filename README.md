@@ -47,6 +47,7 @@ P.S. [stat文件](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/st
 #### 安装依赖
 
 * [bgptools](https://github.com/gaoyifan/bgptools) (`cargo install bgptools `)
+* [bgpdump](https://bitbucket.org/ripencc/bgpdump-hg/wiki/Home) (`apt install bgpdump`)
 * [docker](https://www.docker.com) (`curl -sSL https://get.docker.com | sh`)
 
 #### 生成IP列表

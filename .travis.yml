@@ -4,6 +4,7 @@ addons:
     apt:
         packages:
           - lftp
+          - bgpdump
 services:
     - docker
 language: rust
@@ -14,7 +15,6 @@ before_script:
   - cargo install --vers $BGPTOOLS_VERSION bgptools
   - export PATH=$PATH:/home/travis/.cargo/bin
   - docker pull yangzhaofengsteven/cidr-merge
-  - docker pull gaoyifan/bgpdump
 script:
   - ./generate.sh
   - ./stat.sh
