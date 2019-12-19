@@ -9,7 +9,7 @@ services:
 language: rust
 env:
   global:
-  - BGPTOOLS_VERSION=0.0.2
+  - BGPTOOLS_VERSION=0.0.3
 before_script:
   - cargo install --vers $BGPTOOLS_VERSION bgptools
   - export PATH=$PATH:/home/travis/.cargo/bin
