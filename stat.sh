@@ -10,8 +10,10 @@ for file in *.txt; do
 		(
 			sum=0
 			while read n; do
-				((s=64-n))
-				((sum+=1<<s))
+				if [ -n $n ]; then
+					((s=64-n))
+					((sum+=1<<s))
+				fi
 			done
 			echo $sum
 			)
@@ -21,8 +23,10 @@ for file in *.txt; do
 		(
 			sum=0
 			while read n; do
-				((s=32-n))
-				((sum+=1<<s))
+				if [ -n $n ]; then
+					((s=32-n))
+					((sum+=1<<s))
+				fi
 			done
 			echo $sum
 		)
