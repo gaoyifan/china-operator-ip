@@ -20,7 +20,7 @@ get_asn(){
 }
 
 prepare_data(){
-	curl -sSL https://bgp.potaroo.net/cidr/autnums.html | awk '-F[<>]' '{print $3,$5}' | grep '^AS' > asnames.txt
+	curl -vv -sSL https://bgp.potaroo.net/cidr/autnums.html | awk '-F[<>]' '{print $3,$5}' | grep '^AS' > asnames.txt
 	curl -sSLo rib.bz2 http://archive.routeviews.org/dnszones/rib.bz2
 	IP6UPSTREAM="http://archive.routeviews.org/route-views6/bgpdata"
 	MONTH6=$(lftp -e 'cls -1;exit' $IP6UPSTREAM  2>/dev/null | sort | tail -n 1)
