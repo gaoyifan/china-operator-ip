@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 source common.sh
 set -e
 [[ $SKIP_DATA_PREPARATION != true ]] && prepare_data
