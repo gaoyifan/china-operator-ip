@@ -2,12 +2,10 @@ os: linux
 arch: s390x
 dist: bionic
 addons:
-    apt:
-        packages:
-          - lftp
-          - bgpdump
-services:
-    - docker
+  apt:
+    packages:
+      - lftp
+      - bgpdump
 language: rust
 cache:
   cargo: true
