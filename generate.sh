@@ -5,7 +5,6 @@ set -e
 source common.sh
 set -e
 [[ $SKIP_DATA_PREPARATION != true ]] && prepare_data
-reset
 mkdir -p result
 for file in operator/*.conf; do
 	operator=${file%.*}
