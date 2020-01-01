@@ -27,7 +27,7 @@ prepare_data_v4(){
 }
 prepare_data_v6(){
 	IP6UPSTREAM="http://archive.routeviews.org/route-views6/bgpdata"
-	MONTH6=$(date +%Y.%m)
+	MONTH6=$(date -u +%Y.%m)
 	LATEST6=$(lftp -e 'cls -1;exit' $IP6UPSTREAM/$MONTH6/RIBS/  2>/dev/null | sort | tail -n 1)
 	curl -sSLo rib6.bz2 "$IP6UPSTREAM/$MONTH6/RIBS/$LATEST6"
 	log_info "runing bgpdump v6 ..."
