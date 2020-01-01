@@ -8,14 +8,16 @@ addons:
 services:
     - docker
 language: rust
-cache: cargo
+cache:
+  cargo: true
+  directories:
+    - /home/travis/go/bin
 env:
   global:
   - BGPTOOLS_VERSION=0.0.3
-before_script:
-  - bgptools --version | grep -F $BGPTOOLS_VERSION || cargo install --vers $BGPTOOLS_VERSION bgptools
-  - export PATH=$PATH:/home/travis/.cargo/bin
-  - docker pull yangzhaofengsteven/cidr-merge
+install:
+  - export PATH=$PATH:$HOME/go/bin
+  - ./dependency.sh
 script:
   - ./generate.sh
   - ./stat.sh
