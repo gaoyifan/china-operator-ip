@@ -8,11 +8,12 @@ addons:
 services:
     - docker
 language: rust
+cache: cargo
 env:
   global:
   - BGPTOOLS_VERSION=0.0.3
 before_script:
-  - cargo install --vers $BGPTOOLS_VERSION bgptools
+  - bgptools --version | grep -F $BGPTOOLS_VERSION || cargo install --vers $BGPTOOLS_VERSION bgptools
   - export PATH=$PATH:/home/travis/.cargo/bin
   - docker pull yangzhaofengsteven/cidr-merge
 script:
