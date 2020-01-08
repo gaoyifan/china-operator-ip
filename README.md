@@ -49,7 +49,7 @@ P.S. [stat文件](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/st
 
 * [bgptools](https://github.com/gaoyifan/bgptools) (`cargo install bgptools `)
 * [bgpdump](https://bitbucket.org/ripencc/bgpdump-hg/wiki/Home) (`apt install bgpdump`)
-* [docker](https://www.docker.com) (`curl -sSL https://get.docker.com | sh`)
+* [cidr-merger](https://github.com/zhanhb/cidr-merger) (`go get github.com/zhanhb/cidr-merger`)
 
 #### 生成IP列表
 
