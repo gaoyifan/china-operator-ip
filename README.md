@@ -27,6 +27,7 @@
 * 教育网(cernet)
 * 科技网(cstnet)
 * 鹏博士(drpeng) <试验阶段>
+* 谷歌中国(AS24424) <试验阶段>
 
 *P.S. 鹏博士集团（包括：鹏博士数据、北京电信通、长城宽带、宽带通）的IP地址并非全都由独立的自治域做广播，目前大部分地址仍由电信、联通、科技网代为广播。故[列表](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/drpeng.txt)中的地址仅为鹏博士拥有的部分IP地址，且这些IP同时具有电信、联通两个上级出口。详见[issue #2](https://github.com/gaoyifan/china-operator-ip/issues/2).*
 
@@ -66,7 +67,7 @@ P.S. [stat文件](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/st
 * 感谢[boj](https://ring0.me)师兄提出的[设计建议](https://github.com/ustclug/discussions/issues/79#issuecomment-267958775)
 * 感谢[University of Oregon Route Views Archive Project](http://archive.routeviews.org)项目提供BGP数据源
 * 感谢[Travis CI](https://travis-ci.org)提供优秀的持续集成平台
-* 感谢[cidrmerge](http://cidrmerge.sourceforge.net)项目提供高效的IP地址合并工具
+* 感谢[cidr-merger](https://github.com/zhanhb/cidr-merger)项目提供高效的IP地址合并工具
 * 感谢[bgpdump](https://bitbucket.org/ripencc/bgpdump/wiki/Home)项目提供rib数据的读取工具
 
 ## 协议
