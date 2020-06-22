@@ -8,7 +8,7 @@ language: rust
 cache:
   cargo: true
   directories:
-    - /home/travis/go/bin
+    - /home/travis/gopath/bin/
 env:
   global:
   - BGPTOOLS_VERSION=0.0.3
