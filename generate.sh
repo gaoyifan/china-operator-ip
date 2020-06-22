@@ -13,4 +13,4 @@ for file in operator/*.conf; do
 	get_asn $file | xargs bgptools -b rib6.txt | cidr-merger -s > result/${operator}6.txt &
 done
 
-wait
+wait_exit

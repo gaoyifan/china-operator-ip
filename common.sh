@@ -38,5 +38,18 @@ prepare_data(){
     curl -sSL https://bgp.potaroo.net/cidr/autnums.html | awk '-F[<>]' '{print $3,$5}' | grep '^AS' > asnames.txt &
     prepare_data_v4 &
     prepare_data_v6 &
-    wait
+    wait_exit
+}
+
+wait_exit(){
+    local oldstate=$(set +o)
+    set +e
+    local s=0
+    while [[ $s -ne 127 ]]; do
+        [[ $s -ne 0 ]] && exit $s
+        wait -n
+        s=$?
+    done
+    eval "$oldstate"
+    return 0
 }
