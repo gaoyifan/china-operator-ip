@@ -3,7 +3,7 @@
 [[ $DEBUG == true ]] && set -x
 
 log_info(){
-    >&2 echo "INFO>" $@
+	>&2 echo "INFO>" $@
 }
 
 get_asn(){
@@ -35,21 +35,21 @@ prepare_data_v6(){
 	log_info "finish bgpdump v6"
 }
 prepare_data(){
-    curl -sSL https://bgp.potaroo.net/cidr/autnums.html | awk '-F[<>]' '{print $3,$5}' | grep '^AS' > asnames.txt &
-    prepare_data_v4 &
-    prepare_data_v6 &
-    wait_exit
+	curl -sSL https://bgp.potaroo.net/cidr/autnums.html | awk '-F[<>]' '{print $3,$5}' | grep '^AS' > asnames.txt &
+	prepare_data_v4 &
+	prepare_data_v6 &
+	wait_exit
 }
 
 wait_exit(){
-    local oldstate=$(set +o)
-    set +e
-    local s=0
-    while [[ $s -ne 127 ]]; do
-        [[ $s -ne 0 ]] && exit $s
-        wait -n
-        s=$?
-    done
-    eval "$oldstate"
-    return 0
+	local oldstate=$(set +o)
+	set +e
+	local s=0
+	while [[ $s -ne 127 ]]; do
+		[[ $s -ne 0 ]] && exit $s
+		wait -n
+		s=$?
+	done
+	eval "$oldstate"
+	return 0
 }

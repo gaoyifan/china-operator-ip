@@ -5,11 +5,11 @@ cd result
 for file in *.txt; do
 	echo ${file%.*}
 	if [[ $file == *6.txt ]]; then
-        #statistics IPv6 /48 blocks
-        base=48
-    else
-        base=32
-    fi
+		#statistics IPv6 /48 blocks
+		base=48
+	else
+		base=32
+	fi
 	cat $file |
 	awk -F\/ '{print $2}' |
 	(
