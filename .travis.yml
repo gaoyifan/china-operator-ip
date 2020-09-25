@@ -6,7 +6,6 @@ addons:
       - build-essential
       - git
 cache:
-  cargo: true
   directories:
     - /home/travis/gopath/bin/
 

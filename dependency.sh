@@ -11,7 +11,7 @@ cidr-merger --version || {
 asroute 0 < /dev/null || {
     git clone https://github.com/yangzhaofeng/aspathanalysis.git
     cd aspathanalysis
-    make && make install
+    make && sudo make install
 }
 
 cidr-merger --version
