@@ -8,8 +8,11 @@ cidr-merger --version || {
     eval "$(gimme stable)"
     go get github.com/zhanhb/cidr-merger
 }
-bgptools --version | grep -F $BGPTOOLS_VERSION || \
-    cargo install --vers $BGPTOOLS_VERSION bgptools
+asroute 0 < /dev/null || {
+    git clone https://github.com/yangzhaofeng/aspathanalysis.git
+    cd aspathanalysis
+    make && make install
+}
 
 cidr-merger --version
-bgptools --version
+asroute 0 < /dev/null
