@@ -13,7 +13,7 @@ install:
   - export PATH=$PATH:$HOME/go/bin
   - ./dependency.sh
 script:
-  - ./generate.sh
+  - travis_wait 60 ./generate.sh
   - ./stat.sh
 deploy:
   provider: script
