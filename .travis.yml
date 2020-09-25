@@ -5,13 +5,10 @@ addons:
       - bgpdump
       - build-essential
       - git
-language: rust
 cache:
   cargo: true
   directories:
     - /home/travis/gopath/bin/
-env:
-  global:
 
 install:
   - export PATH=$PATH:$HOME/go/bin
