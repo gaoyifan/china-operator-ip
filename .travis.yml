@@ -2,8 +2,9 @@ dist: bionic
 addons:
   apt:
     packages:
-      - lftp
       - bgpdump
+      - build-essential
+      - git
 language: rust
 cache:
   cargo: true
@@ -11,7 +12,7 @@ cache:
     - /home/travis/gopath/bin/
 env:
   global:
-  - BGPTOOLS_VERSION=0.0.3
+
 install:
   - export PATH=$PATH:$HOME/go/bin
   - ./dependency.sh
