@@ -20,6 +20,6 @@ wait_exit
 
 {
 	cd result/
-	ls ../operator/ | sed 's/\.conf/.txt/g' | xargs cat | cidr-merger -s > result/china.txt
-	ls ../operator/ | sed 's/\.conf/6.txt/g' | xargs cat | cidr-merger -s > result/china6.txt
+	ls ../operator/ | sed 's/\.conf/.txt/g' | xargs cat | cidr-merger -s > china.txt
+	ls ../operator/ | sed 's/\.conf/6.txt/g' | xargs cat | cidr-merger -s > china6.txt
 }
