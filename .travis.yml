@@ -1,22 +1,19 @@
-dist: bionic
+dist: focal
 addons:
   apt:
     packages:
-      - lftp
       - bgpdump
-language: rust
+      - build-essential
+      - git
+language: bash
 cache:
-  cargo: true
   directories:
     - /home/travis/gopath/bin/
-env:
-  global:
-  - BGPTOOLS_VERSION=0.0.3
 install:
   - export PATH=$PATH:$HOME/go/bin
   - ./dependency.sh
 script:
-  - ./generate.sh
+  - travis_wait 60 ./generate.sh
   - ./stat.sh
 deploy:
   provider: script
