@@ -5,10 +5,10 @@ addons:
       - bgpdump
       - build-essential
       - git
+language: bash
 cache:
   directories:
     - /home/travis/gopath/bin/
-
 install:
   - export PATH=$PATH:$HOME/go/bin
   - ./dependency.sh

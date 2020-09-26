@@ -9,7 +9,7 @@ for file in operator/*.conf; do
 	operator=${operator##*/}
 	log_info "generating IP list of $operator ..."
 	source $file
-	if [ -z "AS6" ]; then
+	if [ -z "$AS6" ]; then
 		AS6=$AS
 	fi
 	asroute $AS $EXCLUDE < rib.txt | cidr-merger -s > result/${operator}.txt &
