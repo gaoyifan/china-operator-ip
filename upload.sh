@@ -4,6 +4,7 @@ git clone -b ip-lists https://${GH_REF} ip-lists
 rm ip-lists/*.txt
 mv result/* ip-lists
 cd ip-lists
+tree -H . -P "*.txt" -T "China Operator IP - prebuild results" > index.html
 git config user.name $GIT_USER_NAME
 git config user.email $GIT_USER_EMAIL
 git add .
