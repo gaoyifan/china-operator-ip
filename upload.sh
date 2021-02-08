@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 git clone -b ip-lists https://${GH_REF} ip-lists
+rm ip-lists/*.txt
 mv result/* ip-lists
 cd ip-lists
 git config user.name $GIT_USER_NAME
