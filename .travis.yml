@@ -4,6 +4,7 @@ addons:
     packages:
       - lftp
       - bgpdump
+      - tree
 language: rust
 cache:
   cargo: true
