@@ -1,0 +1,47 @@
+name: Build
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
+
+  workflow_dispatch:
+  schedule:
+    - cron: '45 2 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BGPTOOLS_VERSION: 0.0.3
+      GO111MODULE: on
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: actions/setup-go@v2
+      - name: Setup Go environment variables
+        run: |
+          echo "GOPATH=$(go env GOPATH)" >> $GITHUB_ENV
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+      - run: sudo apt-get install -y lftp bgpdump tree
+      - uses: actions/cache@v2
+        with:
+          key: ${{ runner.os }}-build-dependencies
+          path: |
+            ~/go/bin
+            ~/.cargo/bin
+      - run: ./dependency.sh
+      - run: ./generate.sh
+      - run: ./stat.sh
+      - name: Checkout ip-lists branch
+        uses: actions/checkout@v2
+        if: github.event_name == 'schedule' && github.ref == 'refs/heads/master'
+        with:
+          ref: ip-lists
+          path: ip-lists
+      - run: ./upload.sh
+        if: github.event_name == 'schedule' && github.ref == 'refs/heads/master'
+

@@ -2,12 +2,9 @@
 
 set -e
 
-cidr-merger --version || {
-    curl -sL -o ~/bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
-    chmod +x ~/bin/gimme
-    eval "$(gimme stable)"
-    go get github.com/zhanhb/cidr-merger
-}
+cidr-merger --version || \
+    go get github.com/zhanhb/cidr-merger@v1.1.2
+
 bgptools --version | grep -F $BGPTOOLS_VERSION || \
     cargo install --vers $BGPTOOLS_VERSION bgptools
 
