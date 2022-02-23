@@ -12,9 +12,9 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     env:
-      BGPTOOLS_VERSION: 0.0.3
+      BGPTOOLS_VERSION: 0.1.1
       GO111MODULE: on
     steps:
       - uses: actions/checkout@v2
@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: 1.16
-      - run: sudo apt-get install -y lftp bgpdump tree
+      - run: brew install lftp tree
       - uses: actions/cache@v2
         with:
           key: ${{ runner.os }}-build-dependencies

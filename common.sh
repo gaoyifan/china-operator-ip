@@ -13,43 +13,30 @@ get_asn(){
 	unset EXCLUDE
 	source $CONF_FILE
 	EXCLUDE=${EXCLUDE:-"^$"}
-	grep -P "${COUNTRY}\$" asnames.txt |
-	grep -Pi "$PATTERN" |
-	grep -vPi "$EXCLUDE" |
+	egrep "${COUNTRY}\$" asnames.txt |
+	egrep -i "$PATTERN" |
+	egrep -vi "$EXCLUDE" |
 	awk '{gsub(/AS/, ""); print $1 }'
 }
 
 prepare_data_v4(){
 	curl -sSLo rib.bz2 http://archive.routeviews.org/dnszones/rib.bz2
-	log_info "runing bgpdump v4 ..."
-	bgpdump -m -O rib.txt rib.bz2
-	log_info "finish bgpdump v4"
+	log_info "unzip v4 ..."
+	bzip2 -d  rib.bz2
+	log_info "unzip v4 finish"
 }
 prepare_data_v6(){
 	IP6UPSTREAM="http://archive.routeviews.org/route-views6/bgpdata"
 	MONTH6=$(date -u +%Y.%m)
 	LATEST6=$(lftp -e 'cls -1;exit' $IP6UPSTREAM/$MONTH6/RIBS/  2>/dev/null | sort | tail -n 1)
 	curl -sSLo rib6.bz2 "$IP6UPSTREAM/$MONTH6/RIBS/$LATEST6"
-	log_info "runing bgpdump v6 ..."
-	bgpdump -m -O rib6.txt rib6.bz2
-	log_info "finish bgpdump v6"
+	log_info "unzip v6 ..."
+	bzip2 -d rib6.bz2
+	log_info "unzip v6 finish"
 }
 prepare_data(){
 	curl -sSL https://bgp.potaroo.net/cidr/autnums.html | awk '-F[<>]' '{print $3,$5}' | grep '^AS' > asnames.txt &
-	prepare_data_v4 &
-	prepare_data_v6 &
-	wait_exit
+	prepare_data_v4
+	prepare_data_v6
 }
 
-wait_exit(){
-	local oldstate=$(set +o)
-	set +e
-	local s=0
-	while [[ $s -ne 127 ]]; do
-		[[ $s -ne 0 ]] && exit $s
-		wait -n
-		s=$?
-	done
-	eval "$oldstate"
-	return 0
-}
