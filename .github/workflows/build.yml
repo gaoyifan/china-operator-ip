@@ -34,6 +34,7 @@ jobs:
       - run: ./dependency.sh
       - run: ./generate.sh
       - run: ./stat.sh
+      - run: ./guard.sh
       - name: Checkout ip-lists branch
         uses: actions/checkout@v2
         if: github.event_name == 'schedule' && github.ref == 'refs/heads/master'
