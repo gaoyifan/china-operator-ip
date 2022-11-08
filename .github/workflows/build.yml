@@ -17,15 +17,13 @@ jobs:
       BGPTOOLS_VERSION: 0.0.3
       GO111MODULE: on
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
       - uses: actions/setup-go@v2
         with:
           go-version: 1.16
       - run: sudo apt-get install -y lftp bgpdump tree
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           key: ${{ runner.os }}-build-dependencies
           path: |
@@ -36,7 +34,7 @@ jobs:
       - run: ./stat.sh
       - run: ./guard.sh
       - name: Checkout ip-lists branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         if: github.event_name == 'schedule' && github.ref == 'refs/heads/master'
         with:
           ref: ip-lists
