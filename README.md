@@ -8,7 +8,7 @@
 
 在国内，BGP/ASN数据分析的商业服务只有一个[ipip.net](https://www.ipip.net)，是目前运营商IP库准确度最高的服务商，我认为没有之一。
 
-随着互联网规模的增加，为了处理大批量的路由数据，边界网关协议（即BGP，下同）应运而生，是互联网的基础协议之一。为了保证了全球网络路由的可达性，但凡需要在互联网中注册一个IP（段），都需要借助BGP协议对外广播，这样互联网中的其他自治域才能学习到这段地址的路由信息，其它主机才能成功访问这个IP（段）。因此可以说，BGP数据是最适合分析运营商IP地址的数据来源之一。
+随着互联网规模的增加，为了处理大批量的路由数据，边界网关协议（即BGP，下同）应运而生，是互联网的基础协议之一。为了保证了全球网络路由的可达性，但凡需要在互联网中注册一个IP（段），都需要借助BGP协议对外宣告，这样互联网中的其他自治域才能学习到这段地址的路由信息，其它主机才能成功访问这个IP（段）。因此可以说，BGP数据是最适合分析运营商IP地址的数据来源之一。
 
 但是，目前国内绝大多数IP库都由[WHOIS数据库](https://ftp.apnic.net/apnic/whois/apnic.db.inetnum.gz)作为基础数据来源。WHOIS数据仅表示某个IP被哪个机构注册，但无从知晓该IP被用在何处，这就导致许多非运营商自己注册的IP地址无法被正确分类。ipip.net是最早开始做BGP/ASN数据分析的公司之一，数据准确性甩其它库几条街。但很可惜是，ipip.net作为商业公司，绝大多数高质量的IP数据都是收费的，且价格不菲。
 
@@ -31,7 +31,7 @@
 
 *P.S. 由于移动与铁通已合并，铁通集合即将废弃，详见[issue #10](https://github.com/gaoyifan/china-operator-ip/issues/10)。处于兼容性考虑，当前铁通的预生成数据同中国移动，未来将择机移除铁通。*
 
-*P.S. 鹏博士集团（包括：鹏博士数据、北京电信通、长城宽带、宽带通）的IP地址并非全都由独立的自治域做广播，目前大部分地址仍由电信、联通、科技网代为广播。故[列表](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/drpeng.txt)中的地址仅为鹏博士拥有的部分IP地址，且这些IP同时具有电信、联通两个上级出口。详见[issue #2](https://github.com/gaoyifan/china-operator-ip/issues/2).*
+*P.S. 鹏博士集团（包括：鹏博士数据、北京电信通、长城宽带、宽带通）的IP地址并非全都由独立的自治域做宣告，目前大部分地址仍由电信、联通、科技网代为宣告。故[列表](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/drpeng.txt)中的地址仅为鹏博士拥有的部分IP地址，且这些IP同时具有电信、联通两个上级出口。详见[issue #2](https://github.com/gaoyifan/china-operator-ip/issues/2).*
 
 *P.S. 如果需要国内所有地址的集合，请参考 [chnroutes2](https://github.com/misakaio/chnroutes2) 项目*
 
