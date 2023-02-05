@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
+
+  workflow_dispatch:
+  schedule:
+    - cron: '30 4 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BGPTOOLS_VERSION: 0.0.3
+      GO111MODULE: on
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+      - run: sudo apt-get install -y bgpdump build-essential git
+      - uses: actions/cache@v3
+        with:
+          key: ${{ runner.os }}-build-dependencies
+          path: |
+            ~/go/bin
+      - run: ./dependency.sh
+      - run: ./generate.sh
+      - run: ./stat.sh
+      - run: ./guard.sh
+      - name: Checkout ip-lists branch
+        uses: actions/checkout@v3
+        if: github.event_name == 'schedule' && github.ref == 'refs/heads/master'
+        with:
+          ref: ip-lists
+          path: ip-lists
+      - run: ./upload.sh
+        if: github.event_name == 'schedule' && github.ref == 'refs/heads/master'
