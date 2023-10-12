@@ -16,12 +16,12 @@ jobs:
     env:
       BGPTOOLS_VERSION: 0.0.3
       GO111MODULE: on
-      BVIEW_PATH: /mnt/
+      BVIEW_PATH: /mnt/tmp/
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
         with:
-          go-version: 1.16
+          go-version: 1.20
       - run: sudo apt-get install -y bgpdump build-essential git
       - uses: actions/cache@v3
         with:
@@ -29,6 +29,7 @@ jobs:
           path: |
             ~/go/bin
       - run: ./dependency.sh
+      - run: sudo mkdir /mnt/tmp && chmod 777 /mnt/tmp
       - run: ./generate.sh
       - run: ./stat.sh
       - run: ./guard.sh
