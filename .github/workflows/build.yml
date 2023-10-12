@@ -29,7 +29,7 @@ jobs:
           path: |
             ~/go/bin
       - run: ./dependency.sh
-      - run: sudo mkdir /mnt/tmp && chmod 777 /mnt/tmp
+      - run: sudo mkdir -p /mnt/tmp && sudo chmod 777 /mnt/tmp
       - run: ./generate.sh
       - run: ./stat.sh
       - run: ./guard.sh
