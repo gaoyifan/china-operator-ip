@@ -3,7 +3,7 @@
 set -e
 
 cidr-merger --version || {
-    go install github.com/zhanhb/cidr-merger@v1.1.2
+    go install github.com/zhanhb/cidr-merger@v1.1.3
 }
 asroute 0 < /dev/null || {
     git clone https://github.com/yangzhaofeng/aspathanalysis.git
