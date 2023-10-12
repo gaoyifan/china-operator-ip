@@ -16,6 +16,7 @@ jobs:
     env:
       BGPTOOLS_VERSION: 0.0.3
       GO111MODULE: on
+      BVIEW_PATH: /mnt/
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v2
