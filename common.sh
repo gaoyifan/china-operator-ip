@@ -20,10 +20,10 @@ get_asn(){
 }
 
 prepare_data_v4(){
-	curl -sSLo rib.bz2 http://archive.routeviews.org/dnszones/rib.bz2
-	stat rib.bz2
+	bgpkit-broker latest -c rrc00 --json | jq -c '.[] | select( .data_type | contains("rib")) | .url' | head -n 1 | xargs curl -sSL -o rib.gz
+	stat rib.gz
 	log_info "runing bgpdump v4 ..."
-	bgpdump -m -O rib.txt rib.bz2
+	bgpdump -m -O rib.txt rib.gz
 	stat rib.txt
 	log_info "finish bgpdump v4"
 }
