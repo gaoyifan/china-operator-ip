@@ -33,7 +33,7 @@ jobs:
       - run: ./dependency.sh
       - uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 30
+          timeout_minutes: 60
           max_attempts: 3
           command: ./generate.sh
       - run: ./stat.sh
