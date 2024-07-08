@@ -12,9 +12,9 @@ bgpkit-parser --version || \
     cargo binstall --secure --no-confirm bgpkit-parser@0.10.6
 
 bgpkit-broker --version || \
-    cargo binstall --secure --no-confirm bgpkit-broker@0.7.0-beta.5
+    cargo binstall --secure --no-confirm bgpkit-broker@0.7.0
 
 cidr-merger --version
 bgptools --version
-bgpkit-parser --version 
+bgpkit-parser --version
 bgpkit-broker --version
