@@ -66,6 +66,12 @@ P.S. [stat文件](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/st
 ```shell
 ./stat.sh
 ```
+
+## 社区关联项目
+- [OneOhCloud/One-GeoIP](https://github.com/OneOhCloud/one-geoip): 每日更新的适用于 sing-box 的规则集
+- [fcshark-org/route-list](https://github.com/fcshark-org/route-list): 每日更新的适用于 dnsmasq 的规则集
+- [zxlhhyccc/smartdns-list-scripts](https://github.com/zxlhhyccc/smartdns-list-scripts): smartdns 使用的规则集
+
 ## 致谢
 
 * 感谢[boj](https://ring0.me)师兄提出的[设计建议](https://github.com/ustclug/discussions/issues/79#issuecomment-267958775)
