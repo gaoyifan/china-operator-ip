@@ -51,7 +51,7 @@ P.S. [stat文件](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/st
 
 #### 安装依赖
 
-* [bgptools](https://github.com/gaoyifan/bgptools) (`cargo install bgptools `)
+* [bgptools](https://github.com/gaoyifan/bgptools) (`cargo install bgptools --version 0.0.3`)
 * [bgpdump](https://bitbucket.org/ripencc/bgpdump-hg/wiki/Home) (`apt install bgpdump`)
 * [cidr-merger](https://github.com/zhanhb/cidr-merger) (`go get github.com/zhanhb/cidr-merger`)
 
