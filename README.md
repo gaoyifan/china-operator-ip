@@ -77,9 +77,14 @@ P.S. [stat文件](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/st
 * 感谢[boj](https://ring0.me)师兄提出的[设计建议](https://github.com/ustclug/discussions/issues/79#issuecomment-267958775)
 * 感谢[University of Oregon Route Views Archive Project](http://archive.routeviews.org)项目提供BGP数据源
 * 感谢[Travis CI](https://travis-ci.org)提供优秀的持续集成平台
-* 感谢[GitHub](https://github.com/features/actions)提供计算资源
+* 感谢[GitHub Action](https://github.com/features/actions)提供计算资源
 * 感谢[cidr-merger](https://github.com/zhanhb/cidr-merger)项目提供高效的IP地址合并工具
 * 感谢[bgpdump](https://bitbucket.org/ripencc/bgpdump/wiki/Home)项目提供rib数据的读取工具
+* 感谢[Tencent EdgeOne](https://edgeone.ai/zh?from=github)为本项目提供 CDN 加速及安全防护赞助
+<a href="https://edgeone.ai/zh?from=github">
+  <img src="https://edgeone.ai/media/34fe3a45-492d-4ea4-ae5d-ea1087ca7b4b.png" width="270" height="38" alt="34fe3a45-492d-4ea4-ae5d-ea1087ca7b4b">
+</a>
+ 
 
 ## 协议
 
