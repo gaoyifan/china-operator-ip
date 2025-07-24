@@ -46,6 +46,7 @@ git clone -b ip-lists https://github.com/gaoyifan/china-operator-ip.git
 ```
 
 P.S. [stat文件](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/stat)记录了各运营商的IP数量的统计信息。
+P.S. [EdgeOne Pages镜像](https://china-operator-ip.yfgao.com/)
 
 ### 从BGP数据生成
 
