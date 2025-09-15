@@ -7,7 +7,7 @@ log_info(){
 }
 
 prepare_data(){
-	curl -sSLo latest-bview.gz http://data.ris.ripe.net/rrc00/latest-bview.gz
+	curl -sSLo latest-bview.gz https://data.ris.ripe.net/rrc00/latest-bview.gz
 	log_info "runing bgpdump ..."
 	bgpdump -m -O ${BVIEW_PATH}latest-bview.txt latest-bview.gz
 	grep -v '::/' < ${BVIEW_PATH}latest-bview.txt > rib.txt & # prepare_data_v4
