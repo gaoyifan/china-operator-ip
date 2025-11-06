@@ -46,4 +46,11 @@ jobs:
           path: ip-lists
       - run: ./upload.sh
         if: github.event_name == 'schedule' && github.ref == 'refs/heads/master'
+      - name: Refresh CDN cache
+        if: github.event_name == 'schedule' && github.ref == 'refs/heads/master'
+        run: |
+          cd ip-lists || exit 1
+          for file in $(ls); do
+            curl -i "https://purge.jsdelivr.net/gh/${{ github.repository }}@ip-lists/${file}"
+          done
 
