@@ -49,8 +49,8 @@ jobs:
       - name: Refresh CDN cache
         if: github.event_name == 'schedule' && github.ref == 'refs/heads/master'
         run: |
-          cd ip-lists || exit 1
-          for file in $(ls); do
+          cd ip-lists
+          for file in *; do
             curl -i "https://purge.jsdelivr.net/gh/${{ github.repository }}@ip-lists/${file}"
           done
 
