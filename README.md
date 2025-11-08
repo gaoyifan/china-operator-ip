@@ -37,18 +37,22 @@
 
 ## 如何获取数据
 
-### 使用预生成结果
+### 方法1：使用预生成结果
 
-IP列表（CIDR格式）保存在仓库的[ip-lists分支](https://gaoyifan.github.io/china-operator-ip/index.html)中，GitHub Actions每日自动更新。
+IP列表（CIDR格式）保存在仓库的[ip-lists分支](https://github.com/gaoyifan/china-operator-ip/tree/ip-lists)中，GitHub Actions每日自动更新。
 
 ```sh
 git clone -b ip-lists https://github.com/gaoyifan/china-operator-ip.git
 ```
 
-P.S. [stat文件](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/stat)记录了各运营商的IP数量的统计信息。
-P.S. [EdgeOne Pages镜像](https://china-operator-ip.yfgao.com/)
+亦可通过以下站点获取：
 
-### 从BGP数据生成
+* [EdgeOne Pages](https://china-operator-ip.yfgao.com)（中国大陆境内完整镜像）
+* [jsDelivr](https://www.jsdelivr.com/package/gh/gaoyifan/china-operator-ip)（海外CDN缓存）
+* [GitHub Pages](https://gaoyifan.github.io/china-operator-ip)（海外CDN缓存）
+
+
+### 方法2：从BGP数据生成
 
 #### 安装依赖
 
