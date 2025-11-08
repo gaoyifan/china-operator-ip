@@ -1,6 +1,4 @@
 # 中国运营商IP地址库
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgaoyifan%2Fchina-operator-ip.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgaoyifan%2Fchina-operator-ip?ref=badge_shield)
-
 
 依据中国网络运营商分类的IP地址库
 
@@ -93,4 +91,4 @@ git clone -b ip-lists https://github.com/gaoyifan/china-operator-ip.git
 
 ## 协议
 
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgaoyifan%2Fchina-operator-ip.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgaoyifan%2Fchina-operator-ip?ref=badge_large)
+[MIT License](LICENSE)
