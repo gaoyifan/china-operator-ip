@@ -1,3 +1,14 @@
+<!-- Keep these links. Translations will automatically update with the README. -->
+[中文](https://zdoc.app/zh/gaoyifan/china-operator-ip) | 
+[Deutsch](https://zdoc.app/de/gaoyifan/china-operator-ip) | 
+[English](https://zdoc.app/en/gaoyifan/china-operator-ip) | 
+[Español](https://zdoc.app/es/gaoyifan/china-operator-ip) | 
+[français](https://zdoc.app/fr/gaoyifan/china-operator-ip) | 
+[日本語](https://zdoc.app/ja/gaoyifan/china-operator-ip) | 
+[한국어](https://zdoc.app/ko/gaoyifan/china-operator-ip) | 
+[Português](https://zdoc.app/pt/gaoyifan/china-operator-ip) | 
+[Русский](https://zdoc.app/ru/gaoyifan/china-operator-ip)
+
 # 中国运营商IP地址库
 
 依据中国网络运营商分类的IP地址库
