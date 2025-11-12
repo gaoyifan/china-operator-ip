@@ -57,8 +57,8 @@ git clone -b ip-lists https://github.com/gaoyifan/china-operator-ip.git
 亦可通过以下站点获取：
 
 * [EdgeOne Pages](https://china-operator-ip.yfgao.com)（中国大陆境内完整镜像）
+* [GitHub Pages](https://gaoyifan.github.io/china-operator-ip)（海外完整镜像）
 * [jsDelivr](https://www.jsdelivr.com/package/gh/gaoyifan/china-operator-ip)（海外CDN缓存）
-* [GitHub Pages](https://gaoyifan.github.io/china-operator-ip)（海外CDN缓存）
 
 
 ### 方法2：从BGP数据生成
