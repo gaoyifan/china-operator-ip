@@ -56,7 +56,7 @@ git clone -b ip-lists https://github.com/gaoyifan/china-operator-ip.git
 
 亦可通过以下站点获取：
 
-| 运营商 | [EdgeOne Pages](https://china-operator-ip.yfgao.com)<br/>中国大陆境内完整镜像 | [GitHub Pages](https://gaoyifan.github.io/china-operator-ip)<br/>海外完整镜像 | [jsDelivr](https://www.jsdelivr.com/package/gh/gaoyifan/china-operator-ip)<br/>海外CDN缓存 |
+| 运营商 | [EdgeOne Pages](https://china-operator-ip.yfgao.com) | [GitHub Pages](https://gaoyifan.github.io/china-operator-ip) | [jsDelivr](https://www.jsdelivr.com/package/gh/gaoyifan/china-operator-ip) |
 |---|---|---|---|
 | 中国 | [IPv4](https://china-operator-ip.yfgao.com/china.txt) \| [IPv6](https://china-operator-ip.yfgao.com/china6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/china.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/china6.txt) | [IPv4](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/china.txt) \| [IPv6](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/china6.txt) |
 | 中国电信 | [IPv4](https://china-operator-ip.yfgao.com/chinanet.txt) \| [IPv6](https://china-operator-ip.yfgao.com/chinanet6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/chinanet.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/chinanet6.txt) | [IPv4](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/chinanet.txt) \| [IPv6](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/chinanet6.txt) |
@@ -69,6 +69,10 @@ git clone -b ip-lists https://github.com/gaoyifan/china-operator-ip.git
 | 谷歌中国 | [IPv4](https://china-operator-ip.yfgao.com/googlecn.txt) \| [IPv6](https://china-operator-ip.yfgao.com/googlecn6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/googlecn.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/googlecn6.txt) | [IPv4](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/googlecn.txt) \| [IPv6](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/googlecn6.txt) |
 | 统计 | [stat](https://china-operator-ip.yfgao.com/stat) | [stat](https://gaoyifan.github.io/china-operator-ip/stat) | [stat](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/stat) |
 
+镜像说明：
+* **EdgeOne Pages**: 中国大陆境内完整镜像
+* **GitHub Pages**: 海外完整镜像 
+* **jsDelivr**: 海外CDN缓存 
 
 ### 方法2：从BGP数据生成
 
