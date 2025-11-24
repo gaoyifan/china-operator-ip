@@ -23,19 +23,13 @@ prepare_data_v4(){
 	rm -f rib.gz
 	bgpkit-broker latest -c rrc00 --json | jq -c '.[] | select( .data_type | contains("rib")) | .url' | head -n 1 | xargs axel -q -o rib.gz
 	stat rib.gz
-	log_info "runing bgpdump v4 ..."
-	bgpdump -m -O rib.txt rib.gz
-	stat rib.txt
-	log_info "finish bgpdump v4"
+	log_info "rib.gz ready for bgptools"
 }
 prepare_data_v6(){
-	rm -f rib6.gz
+	rm -f rib6.bz2
 	bgpkit-broker latest -c route-views6 --json | jq -c '.[] | select( .data_type | contains("rib")) | .url' | head -n 1 | xargs axel -q -o rib6.bz2
 	stat rib6.bz2
-	log_info "runing bgpdump v6 ..."
-	bgpdump -m -O rib6.txt rib6.bz2
-	stat rib6.txt
-	log_info "finish bgpdump v6"
+	log_info "rib6.bz2 ready for bgptools"
 }
 prepare_data(){
 	curl -sSL https://bgp.potaroo.net/cidr/autnums.html | awk '-F[<>]' '{print $3,$5}' | grep '^AS' > asnames.txt &
