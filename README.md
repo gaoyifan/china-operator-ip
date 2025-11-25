@@ -13,32 +13,32 @@
 
 依据中国网络运营商分类的IP地址库
 
-## 为什么创造这个项目
+## 为什么要创建这个项目
 
-在国内，BGP/ASN数据分析的商业服务只有一个[ipip.net](https://www.ipip.net)，是目前运营商IP库准确度最高的服务商，我认为没有之一。
+国内在BGP/ASN数据分析和应用方面，目前主要有[ipip.net](https://www.ipip.net)等商业服务，其运营商IP库的准确度较高。
 
-随着互联网规模的增加，为了处理大批量的路由数据，边界网关协议（即BGP，下同）应运而生，是互联网的基础协议之一。为了保证了全球网络路由的可达性，但凡需要在互联网中注册一个IP（段），都需要借助BGP协议对外宣告，这样互联网中的其他自治域才能学习到这段地址的路由信息，其它主机才能成功访问这个IP（段）。因此可以说，BGP数据是最适合分析运营商IP地址的数据来源之一。
+随着互联网的持续发展，边界网关协议（BGP）成为处理大规模路由数据不可或缺的基础协议之一。通过BGP，新的IP地址（或前缀）可以在全球互联网上对外通告，并被其他自治系统学习和访问。因此，BGP数据为分析归属和运营商IP分类提供了宝贵的数据基础。
 
-但是，目前国内绝大多数IP库都由[WHOIS数据库](https://ftp.apnic.net/apnic/whois/apnic.db.inetnum.gz)作为基础数据来源。WHOIS数据仅表示某个IP被哪个机构注册，但无从知晓该IP被用在何处，这就导致许多非运营商自己注册的IP地址无法被正确分类。ipip.net是最早开始做BGP/ASN数据分析的公司之一，数据准确性甩其它库几条街。但很可惜是，ipip.net作为商业公司，绝大多数高质量的IP数据都是收费的，且价格不菲。
+不过，目前国内大部分IP库依赖[WHOIS数据库](https://ftp.apnic.net/apnic/whois/apnic.db.inetnum.gz)作为数据源。WHOIS虽然能标明IP的注册机构，但无法体现实际使用情况，这会导致一些并非运营商亲自宣告的IP地址被分类不准确。像ipip.net这样较早开始结合BGP与ASN数据进行分析的公司，能够提供较为丰富和准确的数据服务，但其高质量数据部分需要付费。
 
-由于在做其他课题时需要处理BGP数据，本着开源精神，我将这部分代码重新封装，创造了这个项目。至于如何使用，大家可以自己发挥想象力。如：[@ustclug](https://github.com/ustclug)将其用在权威DNS服务器上做分域解析；我则借助这个IP库做了一个多出口的网关，访问不同的运营商时走不同的线路（如果都不匹配则走国外vps，原因你懂的）。
+在其他项目中我曾用到BGP数据，因此基于开源的想法整理和公布了这些相关代码，形成了本项目。该IP库可以灵活应用于多种场景，例如[@ustclug](https://github.com/ustclug)利用它在权威DNS服务器中进行分域解析，或者作为按运营商出口分流的参考等。
 
-但由于个人精力有限，IP库的覆盖率并不及ipip.net，尤其是一些骨干网节点的地址，这些地址往往是核心路由设备或企业托管给运营商的地址，对普通用户影响不大。
+受个人精力限制，本项目的IP覆盖率难以与商业服务商持平，特别是在部分骨干节点相关的地址上，可能会有遗漏，但这些情况一般对大多数用户影响较小。
 
-如果大家有任何建议或疑问，欢迎提交issue。
+如有建议或问题，欢迎通过[issue](https://github.com/gaoyifan/china-operator-ip/issues)反馈。
 
 ## 收录的运营商
 
 * 中国电信(chinanet)
 * 中国移动(cmcc)
 * 中国联通(unicom)
-* ~~中国铁通(tietong)~~<即将废弃>
+* ~~中国铁通(tietong)~~<已废弃>
 * 教育网(cernet)
 * 科技网(cstnet)
 * 鹏博士(drpeng) <试验阶段>
 * 谷歌中国(googlecn) <试验阶段>
 
-*P.S. 由于移动与铁通已合并，铁通集合即将废弃，详见[issue #10](https://github.com/gaoyifan/china-operator-ip/issues/10)。处于兼容性考虑，当前铁通的预生成数据同中国移动，未来将择机移除铁通。*
+*P.S. 由于移动与铁通已合并，铁通集合已废弃，详见[issue #10](https://github.com/gaoyifan/china-operator-ip/issues/10)。*
 
 *P.S. 鹏博士集团（包括：鹏博士数据、北京电信通、长城宽带、宽带通）的IP地址并非全都由独立的自治域做宣告，目前大部分地址仍由电信、联通、科技网代为宣告。故[列表](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/drpeng.txt)中的地址仅为鹏博士拥有的部分IP地址，且这些IP同时具有电信、联通两个上级出口。详见[issue #2](https://github.com/gaoyifan/china-operator-ip/issues/2).*
 
@@ -56,63 +56,53 @@ git clone -b ip-lists https://github.com/gaoyifan/china-operator-ip.git
 
 亦可通过以下站点获取：
 
-| 运营商 | [EdgeOne Pages](https://china-operator-ip.yfgao.com) | [GitHub Pages](https://gaoyifan.github.io/china-operator-ip) | [jsDelivr](https://www.jsdelivr.com/package/gh/gaoyifan/china-operator-ip) |
-|---|---|---|---|
-| 中国 | [IPv4](https://china-operator-ip.yfgao.com/china.txt) \| [IPv6](https://china-operator-ip.yfgao.com/china6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/china.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/china6.txt) | [IPv4](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/china.txt) \| [IPv6](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/china6.txt) |
-| 中国电信 | [IPv4](https://china-operator-ip.yfgao.com/chinanet.txt) \| [IPv6](https://china-operator-ip.yfgao.com/chinanet6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/chinanet.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/chinanet6.txt) | [IPv4](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/chinanet.txt) \| [IPv6](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/chinanet6.txt) |
-| 中国移动 | [IPv4](https://china-operator-ip.yfgao.com/cmcc.txt) \| [IPv6](https://china-operator-ip.yfgao.com/cmcc6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/cmcc.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/cmcc6.txt) | [IPv4](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/cmcc.txt) \| [IPv6](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/cmcc6.txt) |
-| 中国联通 | [IPv4](https://china-operator-ip.yfgao.com/unicom.txt) \| [IPv6](https://china-operator-ip.yfgao.com/unicom6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/unicom.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/unicom6.txt) | [IPv4](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/unicom.txt) \| [IPv6](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/unicom6.txt) |
-| 中国铁通 | [IPv4](https://china-operator-ip.yfgao.com/tietong.txt) \| [IPv6](https://china-operator-ip.yfgao.com/tietong6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/tietong.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/tietong6.txt) | [IPv4](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/tietong.txt) \| [IPv6](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/tietong6.txt) |
-| 教育网 | [IPv4](https://china-operator-ip.yfgao.com/cernet.txt) \| [IPv6](https://china-operator-ip.yfgao.com/cernet6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/cernet.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/cernet6.txt) | [IPv4](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/cernet.txt) \| [IPv6](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/cernet6.txt) |
-| 科技网 | [IPv4](https://china-operator-ip.yfgao.com/cstnet.txt) \| [IPv6](https://china-operator-ip.yfgao.com/cstnet6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/cstnet.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/cstnet6.txt) | [IPv4](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/cstnet.txt) \| [IPv6](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/cstnet6.txt) |
-| 鹏博士 | [IPv4](https://china-operator-ip.yfgao.com/drpeng.txt) \| [IPv6](https://china-operator-ip.yfgao.com/drpeng6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/drpeng.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/drpeng6.txt) | [IPv4](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/drpeng.txt) \| [IPv6](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/drpeng6.txt) |
-| 谷歌中国 | [IPv4](https://china-operator-ip.yfgao.com/googlecn.txt) \| [IPv6](https://china-operator-ip.yfgao.com/googlecn6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/googlecn.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/googlecn6.txt) | [IPv4](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/googlecn.txt) \| [IPv6](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/googlecn6.txt) |
-| 统计 | [stat](https://china-operator-ip.yfgao.com/stat) | [stat](https://gaoyifan.github.io/china-operator-ip/stat) | [stat](https://cdn.jsdelivr.net/gh/gaoyifan/china-operator-ip@ip-lists/stat) |
+| 运营商 | [EdgeOne Pages](https://china-operator-ip.yfgao.com) | [GitHub Pages](https://gaoyifan.github.io/china-operator-ip) |
+|---|---|---|
+| 中国 | [IPv4](https://china-operator-ip.yfgao.com/china.txt) \| [IPv6](https://china-operator-ip.yfgao.com/china6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/china.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/china6.txt) |
+| 中国电信 | [IPv4](https://china-operator-ip.yfgao.com/chinanet.txt) \| [IPv6](https://china-operator-ip.yfgao.com/chinanet6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/chinanet.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/chinanet6.txt) |
+| 中国移动 | [IPv4](https://china-operator-ip.yfgao.com/cmcc.txt) \| [IPv6](https://china-operator-ip.yfgao.com/cmcc6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/cmcc.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/cmcc6.txt) |
+| 中国联通 | [IPv4](https://china-operator-ip.yfgao.com/unicom.txt) \| [IPv6](https://china-operator-ip.yfgao.com/unicom6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/unicom.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/unicom6.txt) |
+| 中国铁通 | [IPv4](https://china-operator-ip.yfgao.com/tietong.txt) \| [IPv6](https://china-operator-ip.yfgao.com/tietong6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/tietong.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/tietong6.txt) |
+| 教育网 | [IPv4](https://china-operator-ip.yfgao.com/cernet.txt) \| [IPv6](https://china-operator-ip.yfgao.com/cernet6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/cernet.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/cernet6.txt) |
+| 科技网 | [IPv4](https://china-operator-ip.yfgao.com/cstnet.txt) \| [IPv6](https://china-operator-ip.yfgao.com/cstnet6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/cstnet.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/cstnet6.txt) |
+| 鹏博士 | [IPv4](https://china-operator-ip.yfgao.com/drpeng.txt) \| [IPv6](https://china-operator-ip.yfgao.com/drpeng6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/drpeng.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/drpeng6.txt) |
+| 谷歌中国 | [IPv4](https://china-operator-ip.yfgao.com/googlecn.txt) \| [IPv6](https://china-operator-ip.yfgao.com/googlecn6.txt) | [IPv4](https://gaoyifan.github.io/china-operator-ip/googlecn.txt) \| [IPv6](https://gaoyifan.github.io/china-operator-ip/googlecn6.txt) |
+| 统计 | [stat](https://china-operator-ip.yfgao.com/stat) | [stat](https://gaoyifan.github.io/china-operator-ip/stat) |
 
 镜像说明：
 * **EdgeOne Pages**: 中国大陆境内完整镜像
 * **GitHub Pages**: 海外完整镜像 
-* **jsDelivr**: 海外CDN缓存 
 
 ### 方法2：从BGP数据生成
 
 #### 安装依赖
 
-* [bgptools](https://github.com/gaoyifan/bgptools) (`cargo install bgptools --version 0.0.3`)
-* [bgpdump](https://bitbucket.org/ripencc/bgpdump-hg/wiki/Home) (`apt install bgpdump`)
-* [cidr-merger](https://github.com/zhanhb/cidr-merger) (`go get github.com/zhanhb/cidr-merger`)
+* [just](https://github.com/casey/just?tab=readme-ov-file#installation)
+* [Rust Toolchain](https://www.rust-lang.org/tools/install)
+* [bgpkit-broker](https://github.com/bgpkit/bgpkit-broker) (`cargo install bgpkit-broker@0.7.0`)
+* [bgptools](https://github.com/gaoyifan/bgptools) (`cargo install bgptools --version 0.2.2`)
 
 #### 生成IP列表
 
 ```shell
-./generate.sh
+just
 ```
 
-#### 统计IP数量
-
-```shell
-./stat.sh
-```
+注：执行 `just --list` 查看所有可用的命令。
 
 ## 社区关联项目
-- [OneOhCloud/One-GeoIP](https://github.com/OneOhCloud/one-geoip): 每日更新的适用于 sing-box 的规则集
-- [fcshark-org/route-list](https://github.com/fcshark-org/route-list): 每日更新的适用于 dnsmasq 的规则集
+- [OneOhCloud/One-GeoIP](https://github.com/OneOhCloud/one-geoip): 适用于 sing-box 的规则集
+- [fcshark-org/route-list](https://github.com/fcshark-org/route-list): 适用于 dnsmasq 的规则集
 - [zxlhhyccc/smartdns-list-scripts](https://github.com/zxlhhyccc/smartdns-list-scripts): smartdns 使用的规则集
 
-## 致谢
+## Acknowledgments
 
-* 感谢[boj](https://ring0.me)师兄提出的[设计建议](https://github.com/ustclug/discussions/issues/79#issuecomment-267958775)
-* 感谢[University of Oregon Route Views Archive Project](http://archive.routeviews.org)项目提供BGP数据源
-* 感谢[Travis CI](https://travis-ci.org)提供优秀的持续集成平台
-* 感谢[GitHub Action](https://github.com/features/actions)提供计算资源
-* 感谢[cidr-merger](https://github.com/zhanhb/cidr-merger)项目提供高效的IP地址合并工具
-* 感谢[bgpdump](https://bitbucket.org/ripencc/bgpdump/wiki/Home)项目提供rib数据的读取工具
-* 感谢[Tencent EdgeOne](https://edgeone.ai/zh?from=github)为本项目提供 CDN 加速及安全防护赞助
-<a href="https://edgeone.ai/zh?from=github">
-  <img src="https://edgeone.ai/media/34fe3a45-492d-4ea4-ae5d-ea1087ca7b4b.png" width="270" height="38" alt="34fe3a45-492d-4ea4-ae5d-ea1087ca7b4b">
-</a>
- 
+* 感谢[boj](https://ring0.me)师兄提出的[设计思路](https://github.com/ustclug/discussions/issues/79#issuecomment-267958775)
+* [bgpkit](https://bgpkit.com)
+* [University of Oregon Route Views Archive Project](http://archive.routeviews.org)
+* [GitHub Action](https://github.com/features/actions)
+* [Tencent EdgeOne](https://edgeone.ai/zh?from=github)
 
-## 协议
+## License
 
 [MIT License](LICENSE)
