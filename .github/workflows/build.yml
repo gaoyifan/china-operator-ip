@@ -13,39 +13,32 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      BGPTOOLS_VERSION: 0.2.2
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - uses: cargo-bins/cargo-binstall@main
       - run: sudo apt-get install -y tree jq axel
+      - uses: extractions/setup-just@v3
       - uses: actions/cache@v3
         with:
           key: ${{ runner.os }}-build-dependencies
           path: |
             ~/.cargo/bin
-      - run: ./dependency.sh
+      - run: just dependency
       - uses: nick-fields/retry@v3
         with:
           timeout_minutes: 60
           max_attempts: 3
-          command: ./generate.sh
-      - run: ./stat.sh
-      - run: ./guard.sh
+          command: just
+      - run: just guard
       - name: Checkout ip-lists branch
         uses: actions/checkout@v3
         if: github.event_name == 'schedule' && github.ref == 'refs/heads/master'
         with:
           ref: ip-lists
           path: ip-lists
-      - run: ./upload.sh
+      - run: just upload
         if: github.event_name == 'schedule' && github.ref == 'refs/heads/master'
-      - name: Refresh CDN cache
+      - run: just refresh_jsdelivr ${{ github.repository }}
         if: github.event_name == 'schedule' && github.ref == 'refs/heads/master'
-        run: |
-          cd ip-lists
-          for file in *; do
-            curl -i "https://purge.jsdelivr.net/gh/${{ github.repository }}@ip-lists/${file}"
-          done
 
