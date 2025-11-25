@@ -153,33 +153,28 @@ guard:
   echo "INFO> guard checks passed" >&2
 
 [doc('Summarize total IPv4/IPv6 address space per operator')]
-[script]
 stat:
-  set -euo pipefail
-  cd result
+  #!/usr/bin/env python3
+  import re, sys
+  from pathlib import Path
 
-  for file in *.txt; do
-    name="${file%.*}"
-    echo "${name}"
-    if [[ "${file}" == *6.txt ]]; then
-      base=48
-    else
-      base=32
-    fi
+  result_dir = Path("result")
+  files = sorted(result_dir.glob("*.txt")) if result_dir.is_dir() else []
+  if not files:
+    sys.exit("result/*.txt files missing")
 
-    sum=0
-    while IFS=/ read -r _ mask; do
-      if [[ -z "${mask}" ]]; then
-        continue
-      fi
-      if (( mask <= base )); then
-        ((s=base-mask))
-        ((sum+=1<<s))
-      fi
-    done < "${file}"
-    echo "${sum}"
-    echo
-  done | tee stat
+  mask = re.compile(r"/(\d+)")
+
+  def seats(path):
+    base = 48 if path.name.endswith("6.txt") else 32
+    with path.open() as fh:
+      masks = (int(m.group(1)) for line in fh if (m := mask.search(line)))
+      total = sum(1 << (base - m) for m in masks if m <= base)
+    return path.stem, total
+
+  report = "\n\n".join(f"{name}\n{total}" for name, total in map(seats, files)) + "\n"
+  sys.stdout.write(report)
+  (result_dir / "stat").write_text(report)
 
 [doc('Publish generated results into the ip-lists branch')]
 [script]
