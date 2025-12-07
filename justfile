@@ -1,6 +1,6 @@
 set unstable
 set script-interpreter := ['bash']
-bgptools_version := "0.2.2"
+bgptools_version := "0.2.3"
 
 default: prepare all stat
 
@@ -112,7 +112,7 @@ gen4 operator:
   echo "INFO> generating IPv4 prefixes for {{operator}}" >&2
   just get_asn "{{operator}}" \
     | tee >(awk 'END { if (NR == 0) exit 1 }') \
-    | xargs bgptools --mrt-file rib.gz \
+    | xargs bgptools --ignore-private-asn --mrt-file rib.gz \
     | grep -Fv ':' \
     > "result/{{operator}}.txt"
   echo "INFO> {{operator}}.txt generated ($(wc -l < result/{{operator}}.txt) entries)" >&2
@@ -126,7 +126,7 @@ gen6 operator:
   echo "INFO> generating IPv6 prefixes for {{operator}}" >&2
   just get_asn "{{operator}}" \
     | tee >(awk 'END { if (NR == 0) exit 1 }') \
-    | xargs bgptools --mrt-file rib6.bz2 \
+    | xargs bgptools --ignore-private-asn --mrt-file rib6.bz2 \
     | grep -v '^::/0$' \
     | grep -F ':' \
     > "result/{{operator}}6.txt" || true  # ignore empty output, since drpeng has no IPv6 prefixes
