@@ -10,7 +10,7 @@ dependency:
   set -euo pipefail
 
   if ! bgptools --version 2>/dev/null | grep -F "{{bgptools_version}}" >/dev/null; then
-    cargo install --version "{{bgptools_version}}" bgptools
+    cargo install --force --version "{{bgptools_version}}" bgptools
   fi
 
   if ! bgpkit-broker --version >/dev/null 2>&1; then
