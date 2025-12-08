@@ -1,6 +1,6 @@
 set unstable
 set script-interpreter := ['bash']
-bgptools_version := "0.2.3"
+bgptools_version := "0.2.4"
 
 default: prepare all stat
 
@@ -30,47 +30,41 @@ prepare_autnums:
   rm -f autnums.html
   echo "INFO> asnames.txt updated ($(wc -l < asnames.txt) entries)" >&2
 
-[doc('Download the latest IPv4 RIB snapshot')]
+[doc('Download the latest RIB snapshot for a collector')]
 [script]
-prepare_rib_v4:
+prepare_rib collector:
   set -euo pipefail
 
-  url="$(bgpkit-broker latest -c rrc00 --json \
+  url="$(bgpkit-broker latest -c "{{collector}}" --json \
     | jq -r '.[] | select(.data_type | contains("rib")) | .url' \
     | head -n 1)"
 
   if [[ -z "${url}" ]]; then
-    echo "Unable to determine IPv4 RIB download url" >&2
+    echo "Unable to determine {{collector}} RIB download url" >&2
     exit 1
   fi
 
-  rm -f rib.gz
-  axel -q -o rib.gz "${url}"
-  stat rib.gz
-  echo "INFO> rib.gz ready for bgptools" >&2
-
-[doc('Download the latest IPv6 RIB snapshot')]
-[script]
-prepare_rib_v6:
-  set -euo pipefail
-
-  url="$(bgpkit-broker latest -c route-views6 --json \
-    | jq -r '.[] | select(.data_type | contains("rib")) | .url' \
-    | head -n 1)"
-
-  if [[ -z "${url}" ]]; then
-    echo "Unable to determine IPv6 RIB download url" >&2
+  if [[ "${url}" =~ (\.gz|\.bz2)$ ]]; then
+    suffix="${BASH_REMATCH[1]}"
+  else
+    echo "Unsupported archive format for {{collector}}: ${url}" >&2
     exit 1
   fi
 
-  rm -f rib6.bz2
-  axel -q -o rib6.bz2 "${url}"
-  stat rib6.bz2
-  echo "INFO> rib6.bz2 ready for bgptools" >&2
+  outfile="rib-{{collector}}${suffix}"
+
+  rm -f "${outfile}"
+  axel -q -o "${outfile}" "${url}"
+  stat "${outfile}"
+  echo "INFO> ${outfile} ready for bgptools" >&2
+
+[doc('Download the latest RIB snapshots (rrc21, rrc12, route-views6)')]
+[parallel]
+prepare_ribs: (prepare_rib "rrc00") (prepare_rib "rrc21") (prepare_rib "rrc12") (prepare_rib "route-views6")
 
 [doc('Prepare data for generation')]
 [parallel]
-prepare: prepare_autnums prepare_rib_v4 prepare_rib_v6
+prepare: prepare_autnums prepare_ribs
 
 [doc('Print ASN list for OPERATOR based on operator/*.conf')]
 [script]
@@ -100,7 +94,6 @@ get_asn operator:
     | awk '{gsub(/AS/, ""); print $1 }'
 
 [doc('Generate IP lists for a single operator')]
-[parallel]
 gen operator: (gen4 operator) (gen6 operator)
 
 [script]
@@ -109,10 +102,21 @@ gen4 operator:
 
   mkdir -p result
 
+  RIB_FILES=()
+  for rib in rib-*.gz rib-*.bz2; do
+    [[ -f "${rib}" ]] || continue
+    RIB_FILES+=("--mrt-file" "${rib}")
+  done
+
+  if [[ ${#RIB_FILES[@]} -eq 0 ]]; then
+    echo "No rib-*.gz or rib-*.bz2 files found. Run 'just prepare_ribs' first." >&2
+    exit 1
+  fi
+
   echo "INFO> generating IPv4 prefixes for {{operator}}" >&2
   just get_asn "{{operator}}" \
     | tee >(awk 'END { if (NR == 0) exit 1 }') \
-    | xargs bgptools --ignore-private-asn --mrt-file rib.gz \
+    | xargs bgptools --ignore-private-asn --cache "${RIB_FILES[@]}" \
     | grep -Fv ':' \
     > "result/{{operator}}.txt"
   echo "INFO> {{operator}}.txt generated ($(wc -l < result/{{operator}}.txt) entries)" >&2
@@ -123,17 +127,27 @@ gen6 operator:
 
   mkdir -p result
 
+  RIB_FILES=()
+  for rib in rib-*.gz rib-*.bz2; do
+    [[ -f "${rib}" ]] || continue
+    RIB_FILES+=("--mrt-file" "${rib}")
+  done
+
+  if [[ ${#RIB_FILES[@]} -eq 0 ]]; then
+    echo "No rib-*.gz or rib-*.bz2 files found. Run 'just prepare_ribs' first." >&2
+    exit 1
+  fi
+
   echo "INFO> generating IPv6 prefixes for {{operator}}" >&2
   just get_asn "{{operator}}" \
     | tee >(awk 'END { if (NR == 0) exit 1 }') \
-    | xargs bgptools --ignore-private-asn --mrt-file rib6.bz2 \
+    | xargs bgptools --ignore-private-asn --cache "${RIB_FILES[@]}" \
     | grep -v '^::/0$' \
     | grep -F ':' \
     > "result/{{operator}}6.txt" || true  # ignore empty output, since drpeng has no IPv6 prefixes
   echo "INFO> {{operator}}6.txt generated ($(wc -l < result/{{operator}}6.txt) entries)" >&2
 
 [doc('Generate IP lists for all operators sequentially')]
-[parallel]
 all: (gen "china") (gen "cernet") (gen "chinanet") (gen "cmcc") (gen "unicom") (gen "cstnet") (gen "drpeng") (gen "googlecn")
 
 [script]
