@@ -1,6 +1,6 @@
 set unstable
 set script-interpreter := ['bash']
-bgptools_version := "0.2.4"
+bgptools_version := "0.3.0"
 
 default: prepare all stat
 
