@@ -80,7 +80,7 @@ git clone -b ip-lists https://github.com/gaoyifan/china-operator-ip.git
 * [just](https://github.com/casey/just?tab=readme-ov-file#installation)
 * [Rust Toolchain](https://www.rust-lang.org/tools/install)
 * [bgpkit-broker](https://github.com/bgpkit/bgpkit-broker) (`cargo install bgpkit-broker@0.7.0`)
-* [bgptools](https://github.com/gaoyifan/bgptools) (`cargo install bgptools --version 0.2.2`)
+* [bgptools](https://github.com/gaoyifan/bgptools) (`cargo install bgptools@0.3.0`)
 * [axel](https://github.com/axel-download-accelerator/axel)
 
 #### 生成IP列表
