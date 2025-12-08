@@ -1,5 +1,7 @@
-/asnames.txt
-/autnums.html
-/rib.*
-/rib6.*
-/result
+asnames.txt
+autnums.html
+rib.*
+rib6.*
+rib-*
+result/
+*.bin
