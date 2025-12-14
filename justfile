@@ -25,7 +25,7 @@ dependency:
 prepare_autnums:
   set -euo pipefail
 
-  axel -q -o autnums.html https://bgp.potaroo.net/cidr/autnums.html
+  aria2c -s 4 -x 4 -q -o autnums.html --allow-overwrite=true https://bgp.potaroo.net/cidr/autnums.html
   awk -F'[<>]' '{print $3,$5}' autnums.html | grep '^AS' > asnames.txt
   rm -f autnums.html
   echo "INFO> asnames.txt updated ($(wc -l < asnames.txt) entries)" >&2
@@ -54,7 +54,7 @@ prepare_rib collector:
   outfile="rib-{{collector}}${suffix}"
 
   rm -f "${outfile}"
-  axel -q -o "${outfile}" "${url}"
+  aria2c -s 4 -x 4 -q -o "${outfile}" "${url}"
   stat "${outfile}"
   echo "INFO> ${outfile} ready for bgptools" >&2
 
