@@ -94,7 +94,7 @@ get_asn operator:
     | awk '{gsub(/AS/, ""); print $1 }'
 
 [doc('Generate IP lists for a single operator')]
-gen operator: (gen4 operator) (gen6 operator)
+gen operator: (gen4 operator) (gen6 operator) (gen46 operator)
 
 [script]
 gen4 operator:
@@ -147,6 +147,30 @@ gen6 operator:
     > "result/{{operator}}6.txt" || true  # ignore empty output, since drpeng has no IPv6 prefixes
   echo "INFO> {{operator}}6.txt generated ($(wc -l < result/{{operator}}6.txt) entries)" >&2
 
+[doc('Generate combined IPv4+IPv6 list for a single operator')]
+[script]
+gen46 operator:
+  set -euo pipefail
+
+  mkdir -p result
+
+  v4="result/{{operator}}.txt"
+  v6="result/{{operator}}6.txt"
+  out="result/{{operator}}46.txt"
+
+  : > "${out}"
+
+  if [[ -s "${v4}" ]]; then
+    cat "${v4}" >> "${out}"
+  fi
+
+  # IPv6 file may be empty for some operators (e.g. drpeng)
+  if [[ -s "${v6}" ]]; then
+    cat "${v6}" >> "${out}"
+  fi
+
+  echo "INFO> {{operator}}46.txt generated ($(wc -l < "${out}") entries)" >&2
+
 [doc('Generate IP lists for all operators sequentially')]
 all: (gen "china") (gen "cernet") (gen "chinanet") (gen "cmcc") (gen "unicom") (gen "cstnet") (gen "drpeng") (gen "googlecn")
 
@@ -173,7 +197,10 @@ stat:
   from pathlib import Path
 
   result_dir = Path("result")
-  files = sorted(result_dir.glob("*.txt")) if result_dir.is_dir() else []
+  files = sorted(
+    p for p in (result_dir.glob("*.txt") if result_dir.is_dir() else [])
+    if not p.name.endswith("46.txt")
+  )
   if not files:
     sys.exit("result/*.txt files missing")
 
