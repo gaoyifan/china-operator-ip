@@ -4,7 +4,7 @@ bgptools_version := "0.3.0"
 
 default: prepare all stat
 
-[doc('Install or update bgp tooling dependencies')]
+# Install or update bgp tooling dependencies
 [script]
 dependency:
   set -euo pipefail
@@ -20,7 +20,7 @@ dependency:
   bgptools --version
   bgpkit-broker --version
 
-[doc('Download and normalize latest autnums list')]
+# Download and normalize latest autnums list
 [script]
 prepare_autnums:
   set -euo pipefail
@@ -30,7 +30,7 @@ prepare_autnums:
   rm -f autnums.html
   echo "INFO> asnames.txt updated ($(wc -l < asnames.txt) entries)" >&2
 
-[doc('Download the latest RIB snapshot for a collector')]
+# Download the latest RIB snapshot for a collector
 [script]
 prepare_rib collector:
   set -euo pipefail
@@ -58,15 +58,15 @@ prepare_rib collector:
   stat "${outfile}"
   echo "INFO> ${outfile} ready for bgptools" >&2
 
-[doc('Download the latest RIB snapshots (rrc21, rrc12, route-views6)')]
+# Download the latest RIB snapshots (rrc21, rrc12, route-views6)
 [parallel]
 prepare_ribs: (prepare_rib "rrc00") (prepare_rib "rrc21") (prepare_rib "rrc12") (prepare_rib "route-views6")
 
-[doc('Prepare data for generation')]
+# Prepare data for generation
 [parallel]
 prepare: prepare_autnums prepare_ribs
 
-[doc('Print ASN list for OPERATOR based on operator/*.conf')]
+# Print ASN list for OPERATOR based on operator/*.conf
 [script]
 get_asn operator:
   set -euo pipefail
@@ -93,7 +93,7 @@ get_asn operator:
     | grep -vPi "${EXCLUDE}" \
     | awk '{gsub(/AS/, ""); print $1 }'
 
-[doc('Generate IP lists for a single operator')]
+# Generate IP lists for a single operator
 [script]
 gen operator:
   set -euo pipefail
@@ -132,7 +132,7 @@ gen operator:
   grep -F ':' "${out}" > "${v6}" || true  # ignore empty output, since drpeng has no IPv6 prefixes
   echo "INFO> {{operator}}6.txt generated ($(wc -l < "${v6}") entries)" >&2
 
-[doc('Generate IP lists for all operators sequentially')]
+# Generate IP lists for all operators sequentially
 all: (gen "china") (gen "cernet") (gen "chinanet") (gen "cmcc") (gen "unicom") (gen "cstnet") (gen "drpeng") (gen "googlecn")
 
 [script]
@@ -151,7 +151,7 @@ guard:
 
   echo "INFO> guard checks passed" >&2
 
-[doc('Summarize total IPv4/IPv6 address space per operator')]
+# Summarize total IPv4/IPv6 address space per operator
 stat:
   #!/usr/bin/env python3
   import re, sys
@@ -178,7 +178,7 @@ stat:
   sys.stdout.write(report)
   (result_dir / "stat").write_text(report)
 
-[doc('Publish generated results into the ip-lists branch')]
+# Publish generated results into the ip-lists branch
 [script]
 upload: guard
   set -euo pipefail
@@ -192,7 +192,7 @@ upload: guard
   git commit -m "update $(date +%Y-%m-%d)"
   git push -q
 
-[doc('Refresh CDN cache for all files in ip-lists directory')]
+# Refresh CDN cache for all files in ip-lists directory
 [script]
 refresh_jsdelivr repository:
   set -euo pipefail
