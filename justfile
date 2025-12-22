@@ -119,7 +119,6 @@ gen operator:
   just get_asn "{{operator}}" \
     | tee >(awk 'END { if (NR == 0) exit 1 }') \
     | xargs bgptools --ignore-private-asn --cache "${RIB_FILES[@]}" \
-    | grep -v '^::/0$' \
     > "${out}" || true  # ignore empty output, since drpeng has no IPv6 prefixes
 
   echo "INFO> {{operator}}46.txt generated ($(wc -l < "${out}") entries)" >&2
@@ -133,7 +132,16 @@ gen operator:
   echo "INFO> {{operator}}6.txt generated ($(wc -l < "${v6}") entries)" >&2
 
 # Generate IP lists for all operators sequentially
-all: (gen "china") (gen "cernet") (gen "chinanet") (gen "cmcc") (gen "unicom") (gen "cstnet") (gen "drpeng") (gen "googlecn")
+[script]
+all:
+  set -euo pipefail
+
+  for conf in operator/*.conf; do
+    [[ -f "${conf}" ]] || continue
+    operator="${conf##*/}"
+    operator="${operator%.conf}"
+    just gen "${operator}"
+  done
 
 [script]
 guard:
