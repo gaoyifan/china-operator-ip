@@ -94,13 +94,15 @@ get_asn operator:
     | awk '{gsub(/AS/, ""); print $1 }'
 
 [doc('Generate IP lists for a single operator')]
-gen operator: (gen4 operator) (gen6 operator) (gen46 operator)
-
 [script]
-gen4 operator:
+gen operator:
   set -euo pipefail
 
   mkdir -p result
+
+  out="result/{{operator}}46.txt"
+  v4="result/{{operator}}.txt"
+  v6="result/{{operator}}6.txt"
 
   RIB_FILES=()
   for rib in rib-*.gz rib-*.bz2; do
@@ -113,63 +115,22 @@ gen4 operator:
     exit 1
   fi
 
-  echo "INFO> generating IPv4 prefixes for {{operator}}" >&2
-  just get_asn "{{operator}}" \
-    | tee >(awk 'END { if (NR == 0) exit 1 }') \
-    | xargs bgptools --ignore-private-asn --cache "${RIB_FILES[@]}" \
-    | grep -Fv ':' \
-    > "result/{{operator}}.txt"
-  echo "INFO> {{operator}}.txt generated ($(wc -l < result/{{operator}}.txt) entries)" >&2
-
-[script]
-gen6 operator:
-  set -euo pipefail
-
-  mkdir -p result
-
-  RIB_FILES=()
-  for rib in rib-*.gz rib-*.bz2; do
-    [[ -f "${rib}" ]] || continue
-    RIB_FILES+=("--mrt-file" "${rib}")
-  done
-
-  if [[ ${#RIB_FILES[@]} -eq 0 ]]; then
-    echo "No rib-*.gz or rib-*.bz2 files found. Run 'just prepare_ribs' first." >&2
-    exit 1
-  fi
-
-  echo "INFO> generating IPv6 prefixes for {{operator}}" >&2
+  echo "INFO> generating IPv4+IPv6 prefixes for {{operator}}" >&2
   just get_asn "{{operator}}" \
     | tee >(awk 'END { if (NR == 0) exit 1 }') \
     | xargs bgptools --ignore-private-asn --cache "${RIB_FILES[@]}" \
     | grep -v '^::/0$' \
-    | grep -F ':' \
-    > "result/{{operator}}6.txt" || true  # ignore empty output, since drpeng has no IPv6 prefixes
-  echo "INFO> {{operator}}6.txt generated ($(wc -l < result/{{operator}}6.txt) entries)" >&2
-
-[doc('Generate combined IPv4+IPv6 list for a single operator')]
-[script]
-gen46 operator:
-  set -euo pipefail
-
-  mkdir -p result
-
-  v4="result/{{operator}}.txt"
-  v6="result/{{operator}}6.txt"
-  out="result/{{operator}}46.txt"
-
-  : > "${out}"
-
-  if [[ -s "${v4}" ]]; then
-    cat "${v4}" >> "${out}"
-  fi
-
-  # IPv6 file may be empty for some operators (e.g. drpeng)
-  if [[ -s "${v6}" ]]; then
-    cat "${v6}" >> "${out}"
-  fi
+    > "${out}" || true  # ignore empty output, since drpeng has no IPv6 prefixes
 
   echo "INFO> {{operator}}46.txt generated ($(wc -l < "${out}") entries)" >&2
+
+  echo "INFO> generating IPv4 prefixes for {{operator}}" >&2
+  grep -Fv ':' "${out}" > "${v4}"
+  echo "INFO> {{operator}}.txt generated ($(wc -l < "${v4}") entries)" >&2
+
+  echo "INFO> generating IPv6 prefixes for {{operator}}" >&2
+  grep -F ':' "${out}" > "${v6}" || true  # ignore empty output, since drpeng has no IPv6 prefixes
+  echo "INFO> {{operator}}6.txt generated ($(wc -l < "${v6}") entries)" >&2
 
 [doc('Generate IP lists for all operators sequentially')]
 all: (gen "china") (gen "cernet") (gen "chinanet") (gen "cmcc") (gen "unicom") (gen "cstnet") (gen "drpeng") (gen "googlecn")
@@ -248,4 +209,3 @@ refresh_jsdelivr repository:
       curl -i "https://purge.jsdelivr.net/gh/{{repository}}@ip-lists/${file}"
     fi
   done
-
