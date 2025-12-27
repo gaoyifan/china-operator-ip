@@ -1,12 +1,11 @@
 set unstable
-set script-interpreter := ['bash']
 bgptools_version := "0.3.0"
 
 default: prepare all stat
 
 # Install or update bgp tooling dependencies
-[script]
 dependency:
+  #!/usr/bin/env bash
   set -euo pipefail
 
   if ! bgptools --version 2>/dev/null | grep -F "{{bgptools_version}}" >/dev/null; then
@@ -21,8 +20,8 @@ dependency:
   bgpkit-broker --version
 
 # Download and normalize latest autnums list
-[script]
 prepare_autnums:
+  #!/usr/bin/env bash
   set -euo pipefail
 
   aria2c -s 4 -x 4 -q -o autnums.html --allow-overwrite=true https://bgp.potaroo.net/cidr/autnums.html
@@ -31,8 +30,8 @@ prepare_autnums:
   echo "INFO> asnames.txt updated ($(wc -l < asnames.txt) entries)" >&2
 
 # Download the latest RIB snapshot for a collector
-[script]
 prepare_rib collector:
+  #!/usr/bin/env bash
   set -euo pipefail
 
   url="$(bgpkit-broker latest -c "{{collector}}" --json \
@@ -155,8 +154,8 @@ stat:
   File.write("#{dir}/stat", report)
 
 # Publish generated results into the ip-lists branch
-[script]
 upload: guard
+  #!/usr/bin/env bash
   set -euo pipefail
   rm -f ip-lists/*.txt
   mv result/* ip-lists
@@ -169,8 +168,8 @@ upload: guard
   git push -q
 
 # Refresh CDN cache for all files in ip-lists directory
-[script]
 refresh_jsdelivr repository:
+  #!/usr/bin/env bash
   set -euo pipefail
 
   if [[ ! -d ip-lists ]]; then
