@@ -1,0 +1,34 @@
+name: 功能/需求建议
+description: 建议新增运营商、格式、自动化或文档改进
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎提出需求或改进建议。请尽量给出背景与使用场景。
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 需求描述
+      description: 你希望新增或改进的内容
+      placeholder: "希望新增 xx 运营商的 IPv6 列表，或增加某种输出格式"
+    validations:
+      required: true
+  - type: textarea
+    id: usecase
+    attributes:
+      label: 使用场景
+      description: 为什么需要这个改动
+      placeholder: "用于路由分流/防火墙规则生成等"
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 备选方案
+      description: 是否有临时替代方案或参考实现（可选）
+      placeholder: "目前使用 xx 项目作为临时数据源"
+    validations:
+      required: false

@@ -1,0 +1,50 @@
+name: 数据问题/纠错
+description: 反馈 IP 归属、缺失或错误的条目
+title: "[Data]: "
+labels:
+  - data
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请提供尽可能完整的信息，帮助核对 BGP/ASN 数据来源。
+  - type: input
+    id: prefix
+    attributes:
+      label: 相关 IP 段
+      description: CIDR 格式（可多个）
+      placeholder: "1.2.3.0/24, 2408:xxxx::/32"
+    validations:
+      required: true
+  - type: dropdown
+    id: operator
+    attributes:
+      label: 运营商分类
+      multiple: false
+      options:
+        - 中国电信（chinanet）
+        - 中国移动（cmcc）
+        - 中国联通（unicom）
+        - 教育网（cernet）
+        - 科技网（cstnet）
+        - 鹏博士（drpeng）
+        - 谷歌中国（googlecn）
+        - 其他/不确定
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 信息来源
+      description: WHOIS/BGP/ASN 线索、对比来源、截图等
+      placeholder: "如: APNIC WHOIS, bgp.he.net, 路由公告截图"
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: 影响说明
+      description: 对你的使用场景有什么影响（可选）
+      placeholder: "解析分流不准确，导致部分业务走错线路"
+    validations:
+      required: false

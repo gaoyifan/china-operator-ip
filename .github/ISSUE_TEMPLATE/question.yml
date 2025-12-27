@@ -1,0 +1,24 @@
+name: 使用问题
+description: 使用项目或数据时遇到的问题
+title: "[Question]: "
+labels:
+  - question
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请先查看 README 与已有 Issue。若仍有疑问，欢迎提问。
+  - type: textarea
+    id: question
+    attributes:
+      label: 你的问题
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: 相关背景
+      description: 环境、用途、已尝试的操作
+      placeholder: "系统/工具版本、使用场景、已尝试的配置"
+    validations:
+      required: false
