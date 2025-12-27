@@ -128,7 +128,9 @@ all:
 guard:
   #!/usr/bin/env ruby
   {"china.txt" => 3000, "china6.txt" => 1000}.each do |f, min|
-    exit(1) if File.foreach(File.join("result", f)).count < min && warn("#{f} too small")
+    next if File.foreach("result/#{f}").count >= min
+    warn "#{f} too small"
+    exit 1
   end
   warn "INFO> guard checks passed"
 
