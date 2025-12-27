@@ -142,12 +142,13 @@ stat:
   files.reject! { |p| p.end_with?("46.txt") }
   abort("result/*.txt files missing") if files.empty?
 
-  mask = %r{/(\d+)}
   report = files.map do |p|
     base = p.end_with?("6.txt") ? 48 : 32
     total = File.foreach(p).sum do |line|
-      m = mask.match(line)
-      m && m[1].to_i <= base ? (1 << (base - m[1].to_i)) : 0
+      match = %r{/(\d+)}.match(line)
+      next 0 unless match
+      prefix_len = match[1].to_i
+      prefix_len <= base ? (1 << (base - prefix_len)) : 0
     end
     "#{File.basename(p, ".txt")}\n#{total}"
   end.join("\n\n") + "\n"
