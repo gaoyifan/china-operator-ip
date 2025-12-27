@@ -96,42 +96,34 @@ get_asn operator:
   end
 
 # Generate IP lists for a single operator
-[script]
 gen operator:
-  set -euo pipefail
+  #!/usr/bin/env ruby
+  require "fileutils"
 
-  mkdir -p result
+  operator = "{{operator}}"
+  FileUtils.mkdir_p("result")
 
-  out="result/{{operator}}46.txt"
-  v4="result/{{operator}}.txt"
-  v6="result/{{operator}}6.txt"
+  out = "result/#{operator}46.txt"
+  v4 = "result/#{operator}.txt"
+  v6 = "result/#{operator}6.txt"
 
-  RIB_FILES=()
-  for rib in rib-*.gz rib-*.bz2; do
-    [[ -f "${rib}" ]] || continue
-    RIB_FILES+=("--mrt-file" "${rib}")
-  done
+  ribs = Dir.glob("rib-*.{gz,bz2}").sort
+  abort("No rib-*.gz or rib-*.bz2 files found. Run 'just prepare_ribs' first.") if ribs.empty?
 
-  if [[ ${#RIB_FILES[@]} -eq 0 ]]; then
-    echo "No rib-*.gz or rib-*.bz2 files found. Run 'just prepare_ribs' first." >&2
-    exit 1
-  fi
+  bgptools = ["bgptools", "--ignore-private-asn", "--cache"] + ribs.flat_map { |r| ["--mrt-file", r] }
 
-  echo "INFO> generating IPv4+IPv6 prefixes for {{operator}}" >&2
-  just get_asn "{{operator}}" \
-    | tee >(awk 'END { if (NR == 0) exit 1 }') \
-    | xargs bgptools --ignore-private-asn --cache "${RIB_FILES[@]}" \
-    > "${out}" || true  # ignore empty output, since drpeng has no IPv6 prefixes
+  warn "INFO> #{operator} start"
+  asns = IO.popen(["just", "get_asn", operator], &:read)
+  abort("Failed to get ASN list for #{operator}") unless $?.success?
+  asn_list = asns.split
+  ok = system(*bgptools, *asn_list, out: out)
+  abort("Failed to run bgptools for #{operator}") unless ok
 
-  echo "INFO> {{operator}}46.txt generated ($(wc -l < "${out}") entries)" >&2
-
-  echo "INFO> generating IPv4 prefixes for {{operator}}" >&2
-  grep -Fv ':' "${out}" > "${v4}"
-  echo "INFO> {{operator}}.txt generated ($(wc -l < "${v4}") entries)" >&2
-
-  echo "INFO> generating IPv6 prefixes for {{operator}}" >&2
-  grep -F ':' "${out}" > "${v6}" || true  # ignore empty output, since drpeng has no IPv6 prefixes
-  echo "INFO> {{operator}}6.txt generated ($(wc -l < "${v6}") entries)" >&2
+  lines = File.read(out).lines
+  v6_lines, v4_lines = lines.partition { |line| line.include?(":") }
+  File.write(v4, v4_lines.join)
+  File.write(v6, v6_lines.join)
+  warn "INFO> #{operator} done (v4=#{v4_lines.length} v6=#{v6_lines.length})"
 
 # Generate IP lists for all operators sequentially
 all:
