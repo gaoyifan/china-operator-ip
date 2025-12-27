@@ -171,18 +171,13 @@ upload: guard
 
 # Refresh CDN cache for all files in ip-lists directory
 refresh_jsdelivr repository:
-  #!/usr/bin/env bash
-  set -euo pipefail
+  #!/usr/bin/env ruby
+  require "net/http"
 
-  if [[ ! -d ip-lists ]]; then
-    echo "ip-lists directory not found" >&2
-    exit 1
-  fi
+  dir = "ip-lists"
+  abort("#{dir} directory not found") unless Dir.exist?(dir)
 
-  cd ip-lists
-  for file in *; do
-    if [[ -f "${file}" ]]; then
-      echo "INFO> purging CDN cache for ${file}" >&2
-      curl -i "https://purge.jsdelivr.net/gh/{{repository}}@ip-lists/${file}"
-    fi
-  done
+  Dir.children(dir).sort.each do |file|
+    warn "INFO> purging CDN cache for #{file}"
+    puts Net::HTTP.get_response(URI("https://purge.jsdelivr.net/gh/{{repository}}@#{dir}/#{file}")).inspect
+  end
