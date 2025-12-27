@@ -66,32 +66,34 @@ prepare_ribs: (prepare_rib "rrc00") (prepare_rib "rrc21") (prepare_rib "rrc12") 
 [parallel]
 prepare: prepare_autnums prepare_ribs
 
-# Print ASN list for OPERATOR based on operator/*.conf
-[script]
+# Print ASN list for OPERATOR based on operators.yaml
 get_asn operator:
-  set -euo pipefail
+  #!/usr/bin/env ruby
+  require "yaml"
 
-  config="operator/{{operator}}.conf"
-  if [[ ! -f "${config}" ]]; then
-    echo "Unknown operator: {{operator}}" >&2
-    exit 1
-  fi
+  cfg_path = "operators.yaml"
+  asnames = "asnames.txt"
+  abort("Missing config: #{cfg_path}") unless File.file?(cfg_path)
+  abort("Missing asnames.txt. Run 'just prepare_autnums' first.") unless File.file?(asnames) && File.size?(asnames)
 
-  if [[ ! -s asnames.txt ]]; then
-    echo "Missing asnames.txt. Run 'just prepare_autnums' first." >&2
-    exit 1
-  fi
+  op = YAML.load_file(cfg_path).fetch("operators").fetch("{{operator}}")
+  pat = op["pattern"].to_s
+  ex = op.fetch("exclude", "^$")
+  if (ex_asn = op.fetch("exclude_asn", [])).any?
+    list = "^AS(#{ex_asn.join("|")})\\b"
+    ex = (ex && ex != "^$") ? "(?:#{ex})|(?:#{list})" : list
+  end
+  pat = pat.empty? ? nil : Regexp.new(pat, Regexp::IGNORECASE)
+  ex  = (ex && ex != "^$") ? Regexp.new(ex, Regexp::IGNORECASE) : nil
+  asn = /^AS(\d+)/
 
-  # shellcheck disable=SC1090
-  source "${config}"
-  : "${COUNTRY:?COUNTRY must be set in ${config}}"
-  EXCLUDE="${EXCLUDE:-^$}"
-  PATTERN="${PATTERN:-}"
-
-  grep -P "${COUNTRY}\$" asnames.txt \
-    | grep -Pi "${PATTERN}" \
-    | grep -vPi "${EXCLUDE}" \
-    | awk '{gsub(/AS/, ""); print $1 }'
+  File.foreach(asnames) do |l|
+    l.chomp!
+    next unless l.end_with?(op.fetch("country"))
+    next if pat && !pat.match?(l)
+    next if ex && ex.match?(l)
+    puts asn.match(l)[1] if asn.match?(l)
+  end
 
 # Generate IP lists for a single operator
 [script]
@@ -132,16 +134,15 @@ gen operator:
   echo "INFO> {{operator}}6.txt generated ($(wc -l < "${v6}") entries)" >&2
 
 # Generate IP lists for all operators sequentially
-[script]
 all:
-  set -euo pipefail
+  #!/usr/bin/env ruby
+  require "yaml"
 
-  for conf in operator/*.conf; do
-    [[ -f "${conf}" ]] || continue
-    operator="${conf##*/}"
-    operator="${operator%.conf}"
-    just gen "${operator}"
-  done
+  ops = YAML.load_file("operators.yaml").fetch("operators").keys.sort
+  ops.each do |op|
+    status = system("just", "gen", op)
+    exit($?.exitstatus || 1) unless status
+  end
 
 [script]
 guard:
@@ -161,30 +162,24 @@ guard:
 
 # Summarize total IPv4/IPv6 address space per operator
 stat:
-  #!/usr/bin/env python3
-  import re, sys
-  from pathlib import Path
+  #!/usr/bin/env ruby
+  dir = "result"
+  files = Dir.exist?(dir) ? Dir.glob("#{dir}/*.txt").sort : []
+  files.reject! { |p| p.end_with?("46.txt") }
+  abort("result/*.txt files missing") if files.empty?
 
-  result_dir = Path("result")
-  files = sorted(
-    p for p in (result_dir.glob("*.txt") if result_dir.is_dir() else [])
-    if not p.name.endswith("46.txt")
-  )
-  if not files:
-    sys.exit("result/*.txt files missing")
+  mask = %r{/(\d+)}
+  report = files.map do |p|
+    base = p.end_with?("6.txt") ? 48 : 32
+    total = File.foreach(p).sum do |line|
+      m = mask.match(line)
+      m && m[1].to_i <= base ? (1 << (base - m[1].to_i)) : 0
+    end
+    "#{File.basename(p, ".txt")}\n#{total}"
+  end.join("\n\n") + "\n"
 
-  mask = re.compile(r"/(\d+)")
-
-  def seats(path):
-    base = 48 if path.name.endswith("6.txt") else 32
-    with path.open() as fh:
-      masks = (int(m.group(1)) for line in fh if (m := mask.search(line)))
-      total = sum(1 << (base - m) for m in masks if m <= base)
-    return path.stem, total
-
-  report = "\n\n".join(f"{name}\n{total}" for name, total in map(seats, files)) + "\n"
-  sys.stdout.write(report)
-  (result_dir / "stat").write_text(report)
+  print report
+  File.write("#{dir}/stat", report)
 
 # Publish generated results into the ip-lists branch
 [script]
