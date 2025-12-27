@@ -71,28 +71,25 @@ get_asn operator:
   #!/usr/bin/env ruby
   require "yaml"
 
-  cfg_path = "operators.yaml"
-  asnames = "asnames.txt"
-  abort("Missing config: #{cfg_path}") unless File.file?(cfg_path)
+  cfg, asnames = "operators.yaml", "asnames.txt"
+  abort("Missing config: #{cfg}") unless File.file?(cfg)
   abort("Missing asnames.txt. Run 'just prepare_autnums' first.") unless File.file?(asnames) && File.size?(asnames)
 
-  op = YAML.load_file(cfg_path).fetch("operators").fetch("{{operator}}")
-  pat = op["pattern"].to_s
-  ex = op.fetch("exclude", "^$")
-  if (ex_asn = op.fetch("exclude_asn", [])).any?
-    list = "^AS(#{ex_asn.join("|")})\\b"
-    ex = (ex && ex != "^$") ? "(?:#{ex})|(?:#{list})" : list
-  end
-  pat = pat.empty? ? nil : Regexp.new(pat, Regexp::IGNORECASE)
-  ex  = (ex && ex != "^$") ? Regexp.new(ex, Regexp::IGNORECASE) : nil
-  asn = /^AS(\d+)/
+  op = YAML.load_file(cfg).fetch("operators").fetch("{{operator}}")
+  country = op.fetch("country")
+  exclude_asn = op.fetch("exclude_asn", []).map(&:to_s)
+  pattern_re = Regexp.new(op["pattern"].to_s, Regexp::IGNORECASE)
+  exclude_re = Regexp.new(op.fetch("exclude", "^$"), Regexp::IGNORECASE)
 
-  File.foreach(asnames) do |l|
-    l.chomp!
-    next unless l.end_with?(op.fetch("country"))
-    next if pat && !pat.match?(l)
-    next if ex && ex.match?(l)
-    puts asn.match(l)[1] if asn.match?(l)
+  File.foreach(asnames) do |line|
+    line.chomp!
+    match = line.match(/^AS(\d+)\b.*,\s*([A-Z]{2})$/)
+    asn, line_country = match&.captures
+    next unless line_country == country
+    next if exclude_asn.include?(asn)
+    next unless pattern_re.match?(line)
+    next if exclude_re.match?(line)
+    puts asn
   end
 
 # Generate IP lists for a single operator
@@ -102,25 +99,18 @@ gen operator:
 
   operator = "{{operator}}"
   FileUtils.mkdir_p("result")
+  out, v4, v6 = %W[result/#{operator}46.txt result/#{operator}.txt result/#{operator}6.txt]
 
-  out = "result/#{operator}46.txt"
-  v4 = "result/#{operator}.txt"
-  v6 = "result/#{operator}6.txt"
-
-  ribs = Dir.glob("rib-*.{gz,bz2}").sort
+  ribs = Dir["rib-*.{gz,bz2}"].sort
   abort("No rib-*.gz or rib-*.bz2 files found. Run 'just prepare_ribs' first.") if ribs.empty?
-
   bgptools = ["bgptools", "--ignore-private-asn", "--cache"] + ribs.flat_map { |r| ["--mrt-file", r] }
 
   warn "INFO> #{operator} start"
   asns = IO.popen(["just", "get_asn", operator], &:read)
   abort("Failed to get ASN list for #{operator}") unless $?.success?
-  asn_list = asns.split
-  ok = system(*bgptools, *asn_list, out: out)
-  abort("Failed to run bgptools for #{operator}") unless ok
+  abort("Failed to run bgptools for #{operator}") unless system(*bgptools, *asns.split, out: out)
 
-  lines = File.read(out).lines
-  v6_lines, v4_lines = lines.partition { |line| line.include?(":") }
+  v6_lines, v4_lines = File.readlines(out).partition { |line| line.include?(":") }
   File.write(v4, v4_lines.join)
   File.write(v6, v6_lines.join)
   warn "INFO> #{operator} done (v4=#{v4_lines.length} v6=#{v6_lines.length})"
@@ -136,21 +126,12 @@ all:
     exit($?.exitstatus || 1) unless status
   end
 
-[script]
 guard:
-  set -euo pipefail
-
-  if [[ $(wc -l < result/china.txt) -lt 3000 ]]; then
-    echo "china.txt too small" >&2
-    exit 1
-  fi
-
-  if [[ $(wc -l < result/china6.txt) -lt 1000 ]]; then
-    echo "china6.txt too small" >&2
-    exit 2
-  fi
-
-  echo "INFO> guard checks passed" >&2
+  #!/usr/bin/env ruby
+  {"china.txt" => 3000, "china6.txt" => 1000}.each do |f, min|
+    exit(1) if File.foreach(File.join("result", f)).count < min && warn("#{f} too small")
+  end
+  warn "INFO> guard checks passed"
 
 # Summarize total IPv4/IPv6 address space per operator
 stat:
