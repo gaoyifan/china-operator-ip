@@ -44,8 +44,7 @@ body:
   - type: textarea
     id: impact
     attributes:
-      label: 影响说明
-      description: 对你的使用场景有什么影响（可选）
-      placeholder: "解析分流不准确，导致部分业务走错线路"
+      label: 补充信息
+      description: 其他需要补充的信息（可选）
     validations:
       required: false
