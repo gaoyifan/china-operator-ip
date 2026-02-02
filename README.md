@@ -92,6 +92,8 @@ just
 注：执行 `just --list` 查看所有可用的命令。
 
 ## 社区关联项目
+
+- [Loyalsoldier/geoip](https://github.com/Loyalsoldier/geoip): 按需定制适用于 Nginx、V2Ray、Clash、Surge、sing-box 等软件的多种格式 GeoIP 文件和规则集
 - [OneOhCloud/One-GeoIP](https://github.com/OneOhCloud/one-geoip): 适用于 sing-box 的规则集
 - [fcshark-org/route-list](https://github.com/fcshark-org/route-list): 适用于 dnsmasq 的规则集
 - [zxlhhyccc/smartdns-list-scripts](https://github.com/zxlhhyccc/smartdns-list-scripts): smartdns 使用的规则集
