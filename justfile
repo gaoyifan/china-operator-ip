@@ -1,5 +1,5 @@
 set unstable
-bgptools_version := "0.3.2"
+bgptools_version := "0.3.3"
 
 default: prepare all stat
 
@@ -106,74 +106,25 @@ get_asn_candidates operator:
     puts asn unless exclude_asn.include?(asn)
   end
 
-# Print ASN list for OPERATOR based on operators.yaml
-get_asn operator:
+# Print the trusted transit ASN set configured for OPERATOR
+trusted_transit_asn operator:
   #!/usr/bin/env ruby
-  require "fileutils"
   require "set"
   require "yaml"
 
   operator = "{{operator}}"
-  cfg = YAML.load_file("operators.yaml").fetch("operators").fetch(operator)
-  candidate_asns = IO.popen(["just", "get_asn_candidates", operator], &:read).split
-  abort("Failed to get ASN candidates for #{operator}") unless $?.success?
-  exclude_asn = Set.new
+  operators = YAML.load_file("operators.yaml").fetch("operators")
+  cfg = operators.fetch(operator)
+  trusted_operators = cfg.fetch("trusted_transit_operators", [])
+  trusted_asns = Set.new
 
-  if cfg.fetch("exclude_foreign_upstream_only", false) && !candidate_asns.empty?
-    auto_exclude_path = "result/.#{operator}.auto-exclude.txt"
-
-    if File.file?(auto_exclude_path)
-      exclude_asn.merge(File.read(auto_exclude_path).split)
-    else
-      dynamic_exclude_asn = IO.popen(["just", "foreign_upstream_only_asn", operator], &:read)
-      abort("Failed to compute foreign-upstream-only ASN list for #{operator}") unless $?.success?
-      FileUtils.mkdir_p("result")
-      File.write(auto_exclude_path, dynamic_exclude_asn)
-      exclude_asn.merge(dynamic_exclude_asn.split)
-    end
+  trusted_operators.each do |trusted_operator|
+    output = IO.popen(["just", "get_asn_candidates", trusted_operator], &:read)
+    abort("Failed to get trusted transit ASNs for #{trusted_operator}") unless $?.success?
+    trusted_asns.merge(output.split)
   end
 
-  candidate_asns.each do |asn|
-    puts asn unless exclude_asn.include?(asn)
-  end
-
-# Print dynamically excluded ASNs whose direct upstreams are all foreign
-foreign_upstream_only_asn operator:
-  #!/usr/bin/env ruby
-  require "yaml"
-
-  operator = "{{operator}}"
-  cfg = YAML.load_file("operators.yaml").fetch("operators").fetch(operator)
-  abort("foreign_upstream_only_asn is disabled for #{operator}") unless cfg.fetch("exclude_foreign_upstream_only", false)
-
-  candidate_asns = IO.popen(["just", "get_asn_candidates", operator], &:read).split
-  abort("Failed to get ASN candidates for #{operator}") unless $?.success?
-  exit 0 if candidate_asns.empty?
-
-  ribs = Dir["rib-*.{gz,bz2}"].sort
-  abort("No rib-*.gz or rib-*.bz2 files found. Run 'just prepare_ribs' first.") if ribs.empty?
-  bgptools = [
-    "bgptools",
-    "--ignore-private-asn",
-    "--cache",
-    "--origin-only",
-    "--exclude-foreign-upstream-only",
-    cfg.fetch("country"),
-    "--asn-country-file",
-    "asnames.txt",
-    "--debug-print-foreign-upstream-only-asns",
-  ]
-  bgptools += ribs.flat_map { |rib| ["--mrt-file", rib] }
-  output = IO.popen(bgptools + candidate_asns, &:read)
-  abort("Failed to compute foreign-upstream-only ASN list for #{operator}") unless $?.success?
-  print output
-
-# Save dynamically excluded ASNs to a hidden file under result/
-save_foreign_upstream_only_asn operator:
-  #!/usr/bin/env bash
-  set -euo pipefail
-  mkdir -p result
-  just foreign_upstream_only_asn "{{operator}}" > "result/.{{operator}}.auto-exclude.txt"
+  trusted_asns.sort_by(&:to_i).each { |asn| puts asn }
 
 # Generate IP lists for a single operator
 gen operator:
@@ -191,13 +142,22 @@ gen operator:
   abort("No rib-*.gz or rib-*.bz2 files found. Run 'just prepare_ribs' first.") if ribs.empty?
   bgptools = ["bgptools", "--ignore-private-asn", "--cache"]
   bgptools << "--origin-only" if origin_only
+  if cfg.fetch("trusted_transit_operators", []).any?
+    trusted_transit = IO.popen(["just", "trusted_transit_asn", operator], &:read)
+    abort("Failed to get trusted transit ASNs for #{operator}") unless $?.success?
+    trusted_transit_path = "result/.#{operator}.trusted-transit"
+    File.write(trusted_transit_path, trusted_transit)
+    bgptools += [
+      "--trusted-cn-transit-file",
+      trusted_transit_path,
+      "--asn-country-file",
+      "asnames.txt",
+    ]
+  end
   bgptools += ribs.flat_map { |r| ["--mrt-file", r] }
 
   warn "INFO> #{operator} start"
-  if cfg.fetch("exclude_foreign_upstream_only", false)
-    abort("Failed to save foreign-upstream-only ASN list for #{operator}") unless system("just", "save_foreign_upstream_only_asn", operator)
-  end
-  asns = IO.popen(["just", "get_asn", operator], &:read)
+  asns = IO.popen(["just", "get_asn_candidates", operator], &:read)
   abort("Failed to get ASN list for #{operator}") unless $?.success?
   abort("Failed to run bgptools for #{operator}") unless system(*bgptools, *asns.split, out: out)
 
@@ -235,13 +195,6 @@ stat:
   files = Dir.exist?(dir) ? Dir.glob("#{dir}/*.txt").sort : []
   files.reject! { |p| p.end_with?("46.txt") }
   abort("result/*.txt files missing") if files.empty?
-
-  ops = YAML.load_file("operators.yaml").fetch("operators")
-  ops.each do |operator, cfg|
-    next unless cfg.fetch("exclude_foreign_upstream_only", false)
-    next if File.file?("result/.#{operator}.auto-exclude.txt")
-    abort("Failed to save foreign-upstream-only ASN list for #{operator}") unless system("just", "save_foreign_upstream_only_asn", operator)
-  end
 
   report = files.map do |p|
     base = p.end_with?("6.txt") ? 48 : 32

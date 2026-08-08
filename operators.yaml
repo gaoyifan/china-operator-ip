@@ -6,33 +6,15 @@ operators:
     country: 'CN'
     pattern: ''
     origin_only: true
-    # Experimental: exclude CN-registered ASNs whose observed direct upstreams
-    # in the local RIB snapshot are all non-CN.
-    exclude_foreign_upstream_only: true
+    trusted_transit_operators:
+      - 'chinanet'
+      - 'cmcc'
+      - 'unicom'
+      - 'cstnet'
+      - 'cernet'
+    # AS142111 has trusted domestic paths but originates known foreign prefixes.
     exclude_asn:
-      - '7721'
-      - '24429'
-      - '134413'
-      - '139317'
-      - '140731'
       - '142111'
-      - '142433'
-      - '142586'
-      - '150141'
-      - '150184'
-      - '150373'
-      - '151187'
-      - '151194'
-      - '151202'
-      - '151494'
-      - '151673'
-      - '151785'
-      - '153725'
-      - '199310'
-      - '199932'
-      - '205610'
-      - '209300'
-      - '209306'
   chinanet:
     country: 'CN'
     pattern: '(china ?telecom|chinanet|AS4847 )'

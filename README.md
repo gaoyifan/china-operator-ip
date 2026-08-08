@@ -79,7 +79,7 @@ git clone -b ip-lists https://github.com/gaoyifan/china-operator-ip.git
 * [just](https://github.com/casey/just?tab=readme-ov-file#installation)
 * [Rust Toolchain](https://www.rust-lang.org/tools/install)
 * [bgpkit-broker](https://github.com/bgpkit/bgpkit-broker) (`cargo install bgpkit-broker@0.7.0`)
-* [bgptools](https://github.com/gaoyifan/bgptools) (`cargo install bgptools@0.3.2`)
+* [bgptools](https://github.com/gaoyifan/bgptools) (`cargo install bgptools@0.3.3`)
 * [aria2](https://github.com/aria2/aria2)
 * [Ruby](https://www.ruby-lang.org)
 
@@ -91,19 +91,19 @@ just
 
 注：执行 `just --list` 查看所有可用的命令。
 
-对于 `china` 集合，`operators.yaml` 里新增了一个实验性开关 `exclude_foreign_upstream_only: true`。启用后，如果某个 CN ASN 在本地 RIB 快照里观察到的所有直接上游 ASN 都不属于 `CN`，则该 ASN 的所有宣告都会从结果集中剔除。
+对于 `china` 集合，`operators.yaml` 中的 `trusted_transit_operators` 定义可信的国内运营商。目前包括电信、移动、联通、科技网和教育网。教育网使用完整的 `cernet` 名称匹配集合，其中已经包含 AS4538、AS23910，无需再单独配置骨干 ASN。
 
-可以用下面两个命令查看或导出这组 ASN：
+生成时会从每条 AS_PATH 的 origin 端向上检查连续的 CN 后缀。对于每个 origin ASN，只要至少一条观测路径的连续 CN 后缀中包含可信运营商 ASN，该 ASN 宣告的前缀就会进入 `china` 集合；遇到第一个非 CN 或国家未知的 ASN 后立即停止，不能跨过境外 transit 再寻找国内运营商。
+
+原有 `exclude_asn` 中可由该规则自然排除的项目已经移除，只保留仍有可信国内路径、但宣告已知境外地址段的 AS142111。
+
+可以用下面的命令查看生成的可信 ASN 集合：
 
 ```shell
-just foreign_upstream_only_asn china
-just save_foreign_upstream_only_asn china
+just trusted_transit_asn china
 ```
 
-第二个命令会将结果写入 `result/.china.auto-exclude.txt`，每行一个 ASN。
-此外，`just stat` 也会自动刷新这类隐藏文件。
-
-这个实验性规则依赖支持 `--exclude-foreign-upstream-only` 的 `bgptools` 版本，并直接读取本地 `rib-*` 快照。
+该规则依赖支持 `--trusted-cn-transit-file` 的 `bgptools` 版本，并直接读取本地 `rib-*` 快照。
 
 ## 社区关联项目
 
