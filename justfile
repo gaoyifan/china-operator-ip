@@ -145,7 +145,7 @@ gen operator:
   if cfg.fetch("trusted_transit_operators", []).any?
     trusted_transit = IO.popen(["just", "trusted_transit_asn", operator], &:read)
     abort("Failed to get trusted transit ASNs for #{operator}") unless $?.success?
-    trusted_transit_path = "result/.#{operator}.trusted-transit"
+    trusted_transit_path = "result/.#{operator}.trusted-transit.txt"
     File.write(trusted_transit_path, trusted_transit)
     bgptools += [
       "--trusted-cn-transit-file",
