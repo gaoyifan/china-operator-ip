@@ -29,7 +29,7 @@ The built-in BGP classifier reads one or more MRT/RIB files and outputs the IPv4
    Unless `--origin-only` is set, the algorithm computes the longest common suffix of the collected AS paths (capped to 4 ASNs). These shared upstream ASNs are added to the prefix map so they are treated like origin ASNs for interval attribution.
 
 5) **Build ASN → IP ranges**
-   Consecutive split points define half-open intervals `[start, end)`. For each interval, a /32 (v4) or /128 (v6) lookup finds the longest covering prefix and its ASNs. Each ASN receives the interval, converted to a minimal set of CIDRs via `interval_to_cidrs_v4/v6`. The per-AS ranges are stored as `IpRange` structures to allow merging.
+   Consecutive split points define half-open intervals `[start, end)`. For each interval, a /32 (v4) or /128 (v6) lookup finds the longest covering prefix and its ASNs. Each ASN receives the interval, converted to a minimal set of CIDRs by the generic address-family implementation. The per-AS ranges are stored as `IpRange` structures to allow merging.
 
 6) **Optional foreign-upstream filtering**
    When `--exclude-foreign-upstream-only <COUNTRY>` is enabled, the classifier loads ASN → country data from `--asn-country-file` and removes any requested ASN whose observed direct upstream ASNs are all known and all outside `<COUNTRY>`. A hidden debug flag can print this matched ASN list directly.
@@ -44,12 +44,10 @@ The built-in BGP classifier reads one or more MRT/RIB files and outputs the IPv4
 
 When `--cache` is enabled, the computed ASN→range maps, complete observed announcement sets, and origin→direct-upstream map are serialized to a bincode file keyed by input file list, `ignore_private_asn`, `origin_only`, and the trusted-transit policy fingerprint. The fallback file is read after cache loading and therefore does not affect the key. Subsequent runs reuse the cache when the key matches.
 
-## Key Functions (in `src/main.rs`)
+## Modules
 
-- `process_mrt_file`: Parses one MRT file and extracts prefix/ASN/path data plus split points.
-- `longest_common_suffix`: Finds shared tail of AS paths (≤4 hops).
-- `interval_to_cidrs_v4/v6`: Converts `[start, end)` intervals to minimal CIDR cover.
-- `foreign_upstream_only_asns`: Computes which target ASNs have only foreign direct upstreams.
-- `apply_fallback_prefixes`: Adds only the unannounced part of configured IPv4/IPv6 fallback ranges.
-- `has_domestic_suffix`: Checks whether an AS path has a contiguous CN origin-side suffix containing trusted transit.
-- `build_asn_data`: Orchestrates merging, shared-upstream attribution, interval slicing, and ASN range construction.
+- `src/main.rs`: Parses CLI options, selects cache use and prints the final result.
+- `src/classifier.rs`: Parses MRT files and exposes the completed classification through `Classification`.
+- `src/ip.rs`: Owns dual-stack state and the generic address-family implementation for interval slicing, longest-prefix lookup and fallback subtraction.
+- `src/asn.rs`: Defines the `Asn` domain type, AS-path operations, domestic policy and country/upstream classification.
+- `src/cache.rs`: Owns cache keys, format version 5 and bincode persistence.
