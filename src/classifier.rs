@@ -121,16 +121,7 @@ fn process_mrt_file(
             .as_path
             .as_ref()
             .and_then(|path| path.to_u32_vec_opt(false))
-            .map(|path| {
-                path.into_iter()
-                    .map(Asn::from)
-                    .fold(Vec::new(), |mut normalized, asn| {
-                        if normalized.last() != Some(&asn) {
-                            normalized.push(asn);
-                        }
-                        normalized
-                    })
-            });
+            .map(|path| path.into_iter().map(Asn::from).collect::<Vec<_>>());
         let path = full_path.as_deref().map(normalize_path);
 
         if full_path

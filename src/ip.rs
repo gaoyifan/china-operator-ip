@@ -14,15 +14,15 @@ type AsnRangeMap<N> = HashMap<Asn, IpRange<N>>;
 
 #[derive(Default, Deserialize, Serialize)]
 pub(crate) struct DualStack<V4, V6> {
-    pub(crate) v4: V4,
-    pub(crate) v6: V6,
+    v4: V4,
+    v6: V6,
 }
 
 pub(crate) type IpRanges = DualStack<IpRange<Ipv4Net>, IpRange<Ipv6Net>>;
 pub(crate) type AsnRanges = DualStack<AsnRangeMap<Ipv4Net>, AsnRangeMap<Ipv6Net>>;
 
 impl IpRanges {
-    pub(crate) fn add_prefix(&mut self, prefix: IpNet) {
+    fn add_prefix(&mut self, prefix: IpNet) {
         match prefix {
             IpNet::V4(net) => {
                 self.v4.add(net);

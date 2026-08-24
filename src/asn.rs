@@ -296,6 +296,7 @@ mod tests {
             24489.into()
         ]));
         assert!(policy.has_domestic_suffix(&[6939.into(), 7497.into(), 38345.into()]));
+        assert!(policy.has_domestic_suffix(&[6939.into(), 7497.into(), 7497.into(), 38345.into()]));
         assert!(!policy.has_domestic_suffix(&[4538.into(), 6939.into(), 24489.into()]));
         assert!(!policy.has_domestic_suffix(&[4538.into(), 64500.into(), 24489.into()]));
     }
