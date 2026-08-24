@@ -1,5 +1,4 @@
 set unstable
-bgptools_version := "0.3.4"
 
 default: prepare all stat
 
@@ -8,15 +7,13 @@ dependency:
   #!/usr/bin/env bash
   set -euo pipefail
 
-  if ! bgptools --version 2>/dev/null | grep -F "{{bgptools_version}}" >/dev/null; then
-    cargo install --force --version "{{bgptools_version}}" bgptools
-  fi
+  cargo build --release --locked
 
   if ! bgpkit-broker --version >/dev/null 2>&1; then
     cargo binstall --secure --no-confirm bgpkit-broker@0.7.0
   fi
 
-  bgptools --version
+  target/release/china-operator-ip --version
   bgpkit-broker --version
 
 # Download and normalize latest autnums list
@@ -73,7 +70,7 @@ prepare_rib collector:
   rm -f "${outfile}"
   aria2c -s 4 -x 4 -q -o "${outfile}" "${url}"
   stat "${outfile}"
-  echo "INFO> ${outfile} ready for bgptools" >&2
+  echo "INFO> ${outfile} ready for BGP classification" >&2
 
 # Download the latest RIB snapshots (rrc21, rrc12, route-views6)
 [parallel]
@@ -201,33 +198,33 @@ gen operator:
 
   ribs = Dir["rib-*.{gz,bz2}"].sort
   abort("No rib-*.gz or rib-*.bz2 files found. Run 'just prepare_ribs' first.") if ribs.empty?
-  bgptools = ["bgptools", "--ignore-private-asn", "--cache"]
-  bgptools << "--origin-only" if origin_only
+  classifier = ["target/release/china-operator-ip", "--ignore-private-asn", "--cache"]
+  classifier << "--origin-only" if origin_only
   if country = cfg["registry_fallback_country"]
     registered = IO.popen(["just", "registry_prefixes", country], &:read)
     abort("Failed to get registered prefixes for #{country}") unless $?.success?
     registered_path = "result/.#{operator}.registered.txt"
     File.write(registered_path, registered)
-    bgptools += ["--fallback-prefix-file", registered_path]
+    classifier += ["--fallback-prefix-file", registered_path]
   end
   if cfg.fetch("trusted_transit_operators", []).any?
     trusted_transit = IO.popen(["just", "trusted_transit_asn", operator], &:read)
     abort("Failed to get trusted transit ASNs for #{operator}") unless $?.success?
     trusted_transit_path = "result/.#{operator}.trusted-transit.txt"
     File.write(trusted_transit_path, trusted_transit)
-    bgptools += [
+    classifier += [
       "--trusted-cn-transit-file",
       trusted_transit_path,
       "--asn-country-file",
       "asnames.txt",
     ]
   end
-  bgptools += ribs.flat_map { |r| ["--mrt-file", r] }
+  classifier += ribs.flat_map { |r| ["--mrt-file", r] }
 
   warn "INFO> #{operator} start"
   asns = IO.popen(["just", "get_asn_candidates", operator], &:read)
   abort("Failed to get ASN list for #{operator}") unless $?.success?
-  abort("Failed to run bgptools for #{operator}") unless system(*bgptools, *asns.split, out: out)
+  abort("Failed to run BGP classifier for #{operator}") unless system(*classifier, *asns.split, out: out)
 
   v6_lines, v4_lines = File.readlines(out).partition { |line| line.include?(":") }
   File.write(v4, v4_lines.join)

@@ -55,7 +55,7 @@ china:
 
 生成器拥有 RIR 外部格式的实现，负责下载五个 delegated 文件、筛选记录、转换非 CIDR IPv4 范围，并生成可审计的 `result/.china.registered.txt`。
 
-`bgptools` 不理解 RIR 格式，只通过一个稳定的通用接口读取规范 CIDR：
+内置的 BGP 分类器不理解 RIR 格式，只通过一个稳定的通用接口读取规范 CIDR：
 
 ```text
 --fallback-prefix-file result/.china.registered.txt
@@ -72,7 +72,7 @@ china:
 
 ## 验证
 
-`bgptools` 行为测试覆盖：
+BGP 分类器的行为测试覆盖：
 
 1. 已分类半段与未宣告半段能合并为完整 fallback；
 2. fallback 内已宣告的更具体前缀保持为空洞；
@@ -89,11 +89,8 @@ china:
 - `china` 的集合差仅包含登记为 CN 且未宣告的地址；
 - Issue #45 的结果包含 `121.46.0.0/18`，具体运营商集合不因此扩张。
 
-## 发布顺序
+## 代码归属
 
-该改动跨越 `bgptools` 和本仓库，按以下顺序发布：
+BGP 分类器只有本项目一个使用者，其 Rust crate 已直接合并到仓库顶层的 `Cargo.toml`、`Cargo.lock` 和 `src/`，由 `just dependency` 从当前仓库构建。生成规则和 BGP 集合算法在同一个提交与 CI 中修改、验证，不再依赖跨仓库发布顺序。
 
-1. 合并并发布 `bgptools 0.3.4`；
-2. 本仓库固定并使用 `0.3.4`，同时启用 RIR 数据准备和文件透传；
-3. 在 pull request 构建中检查完整集合差和隐藏登记输入；
-4. 合并后手动触发一次 `update_ip_lists`，检查产物再恢复每日自动更新。
+crates.io 上旧的 `bgptools 0.3.4` 是最后一个独立发布版本，仅为已有安装保留；当前顶层 crate 名为 `china-operator-ip` 并设置了 `publish = false`。旧 crate 后续不再更新，原独立 GitHub 仓库已归档。

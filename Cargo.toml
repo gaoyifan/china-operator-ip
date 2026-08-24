@@ -1,0 +1,21 @@
+[package]
+name = "china-operator-ip"
+version = "0.1.0"
+edition = "2024"
+authors = ["Yifan Gao <git@yfgao.com>"]
+description = "Generate China operator IP lists from BGP RIB data"
+repository = "https://github.com/gaoyifan/china-operator-ip"
+license = "MIT"
+publish = false
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+bgpkit-parser = "0.12"
+iprange = { version = "0.6.7", features = ["serde"] }
+ipnet = { version = "2.11.0", features = ["serde"] }
+prefix-trie = { version = "0.8", features = ["ipnet"] }
+vec-collections = "0.4.3"
+serde = { version = "1", features = ["derive"] }
+bincode = "1"
+rayon = "1.10"
+smallvec = "1.13"

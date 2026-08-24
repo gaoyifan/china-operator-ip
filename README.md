@@ -79,7 +79,6 @@ git clone -b ip-lists https://github.com/gaoyifan/china-operator-ip.git
 * [just](https://github.com/casey/just?tab=readme-ov-file#installation)
 * [Rust Toolchain](https://www.rust-lang.org/tools/install)
 * [bgpkit-broker](https://github.com/bgpkit/bgpkit-broker) (`cargo install bgpkit-broker@0.7.0`)
-* [bgptools](https://github.com/gaoyifan/bgptools) (`cargo install bgptools@0.3.4`)
 * [aria2](https://github.com/aria2/aria2)
 * [Ruby](https://www.ruby-lang.org)
 
@@ -105,7 +104,7 @@ just
 just trusted_transit_asn china
 ```
 
-该规则依赖支持 `--trusted-cn-transit-file` 的 `bgptools` 版本，并直接读取本地 `rib-*` 快照。
+BGP 分类程序的 Rust 源码位于仓库顶层的 `src/`，执行 `just dependency` 会在当前仓库构建。它直接读取本地 `rib-*` 快照，与生成规则在同一个提交和 CI 中同步修改、验证。
 
 ## 社区关联项目
 

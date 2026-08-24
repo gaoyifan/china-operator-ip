@@ -6,4 +6,5 @@ rib6.*
 rib-*
 result/
 analysis/
+/target/
 *.bin
