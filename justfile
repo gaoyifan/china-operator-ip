@@ -1,5 +1,5 @@
 set unstable
-bgptools_version := "0.3.3"
+bgptools_version := "0.3.4"
 
 default: prepare all stat
 
@@ -28,6 +28,24 @@ prepare_autnums:
   awk -F'[<>]' '{print $3,$5}' autnums.html | grep '^AS' > asnames.txt
   rm -f autnums.html
   echo "INFO> asnames.txt updated ($(wc -l < asnames.txt) entries)" >&2
+
+# Download an RIR extended delegated statistics file
+prepare_registry registry url:
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  outfile="delegated-{{registry}}-extended-latest"
+  aria2c -s 4 -x 4 -q -o "${outfile}" --allow-overwrite=true "{{url}}"
+  echo "INFO> ${outfile} updated ($(wc -l < "${outfile}") records)" >&2
+
+# Download all RIR delegated statistics
+[parallel]
+prepare_registries: \
+  (prepare_registry "afrinic" "https://ftp.afrinic.net/pub/stats/afrinic/delegated-afrinic-extended-latest") \
+  (prepare_registry "apnic" "https://ftp.apnic.net/stats/apnic/delegated-apnic-extended-latest") \
+  (prepare_registry "arin" "https://ftp.arin.net/pub/stats/arin/delegated-arin-extended-latest") \
+  (prepare_registry "lacnic" "https://ftp.lacnic.net/pub/stats/lacnic/delegated-lacnic-extended-latest") \
+  (prepare_registry "ripencc" "https://ftp.ripe.net/ripe/stats/delegated-ripencc-extended-latest")
 
 # Download the latest RIB snapshot for a collector
 prepare_rib collector:
@@ -63,7 +81,50 @@ prepare_ribs: (prepare_rib "rrc00") (prepare_rib "rrc21") (prepare_rib "rrc12") 
 
 # Prepare data for generation
 [parallel]
-prepare: prepare_autnums prepare_ribs
+prepare: prepare_autnums prepare_registries prepare_ribs
+
+# Print allocated and assigned prefixes registered to COUNTRY by any RIR
+registry_prefixes country:
+  #!/usr/bin/env ruby
+  require "ipaddr"
+
+  country = "{{country}}"
+  registries = %w[afrinic apnic arin lacnic ripencc]
+  files = registries.map { |registry| "delegated-#{registry}-extended-latest" }
+  missing = files.reject { |file| File.file?(file) && File.size?(file) }
+  abort("Missing delegated RIR files: #{missing.join(", ")}. Run 'just prepare_registries' first.") unless missing.empty?
+  prefixes = []
+
+  files.each do |file|
+    File.foreach(file) do |line|
+      _registry, record_country, type, start, value, _date, status = line.chomp.split("|", 8)
+      next unless record_country == country
+      next unless %w[allocated assigned].include?(status)
+
+      case type
+      when "ipv4"
+        current = IPAddr.new(start).to_i
+        remaining = Integer(value)
+        while remaining.positive?
+          alignment = current.zero? ? (1 << 32) : current & -current
+          block = [alignment, 1 << (remaining.bit_length - 1)].min
+          prefix_len = 32 - (block.bit_length - 1)
+          prefixes << [4, current, prefix_len, "#{IPAddr.new(current, Socket::AF_INET)}/#{prefix_len}"]
+          current += block
+          remaining -= block
+        end
+      when "ipv6"
+        prefix_len = Integer(value)
+        network = IPAddr.new("#{start}/#{prefix_len}")
+        prefixes << [6, network.to_i, prefix_len, "#{network}/#{prefix_len}"]
+      end
+    end
+  end
+
+  abort("No registered prefixes found for #{country}") if prefixes.empty?
+  prefixes.uniq.sort_by { |family, address, prefix_len, _| [family, address, prefix_len] }.each do |*_, prefix|
+    puts prefix
+  end
 
 # Print raw ASN candidates for OPERATOR based on operators.yaml
 get_asn_candidates_raw operator:
@@ -142,6 +203,13 @@ gen operator:
   abort("No rib-*.gz or rib-*.bz2 files found. Run 'just prepare_ribs' first.") if ribs.empty?
   bgptools = ["bgptools", "--ignore-private-asn", "--cache"]
   bgptools << "--origin-only" if origin_only
+  if country = cfg["registry_fallback_country"]
+    registered = IO.popen(["just", "registry_prefixes", country], &:read)
+    abort("Failed to get registered prefixes for #{country}") unless $?.success?
+    registered_path = "result/.#{operator}.registered.txt"
+    File.write(registered_path, registered)
+    bgptools += ["--fallback-prefix-file", registered_path]
+  end
   if cfg.fetch("trusted_transit_operators", []).any?
     trusted_transit = IO.popen(["just", "trusted_transit_asn", operator], &:read)
     abort("Failed to get trusted transit ASNs for #{operator}") unless $?.success?

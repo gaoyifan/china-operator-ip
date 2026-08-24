@@ -42,7 +42,7 @@
 
 *P.S. 鹏博士集团（包括：鹏博士数据、北京电信通、长城宽带、宽带通）的IP地址并非全都由独立的自治域做宣告，目前大部分地址仍由电信、联通、科技网代为宣告。故[列表](https://github.com/gaoyifan/china-operator-ip/blob/ip-lists/drpeng.txt)中的地址仅为鹏博士拥有的部分IP地址，且这些IP同时具有电信、联通两个上级出口。详见[issue #2](https://github.com/gaoyifan/china-operator-ip/issues/2).*
 
-*P.S. 如果需要国内所有地址的集合，请参考 [chnroutes2](https://github.com/misakaio/chnroutes2) 项目*
+*P.S. `china` 采用“可信国内 BGP 分类 + 未宣告 RIR-CN 登记兜底”的组合语义。如果只需要独立基于 RIR 分配数据生成的中国地址集合，可参考 [chnroutes2](https://github.com/misakaio/chnroutes2) 项目。*
 
 ## 如何获取数据
 
@@ -79,7 +79,7 @@ git clone -b ip-lists https://github.com/gaoyifan/china-operator-ip.git
 * [just](https://github.com/casey/just?tab=readme-ov-file#installation)
 * [Rust Toolchain](https://www.rust-lang.org/tools/install)
 * [bgpkit-broker](https://github.com/bgpkit/bgpkit-broker) (`cargo install bgpkit-broker@0.7.0`)
-* [bgptools](https://github.com/gaoyifan/bgptools) (`cargo install bgptools@0.3.3`)
+* [bgptools](https://github.com/gaoyifan/bgptools) (`cargo install bgptools@0.3.4`)
 * [aria2](https://github.com/aria2/aria2)
 * [Ruby](https://www.ruby-lang.org)
 
@@ -96,6 +96,8 @@ just
 生成时会从每条 AS_PATH 的 origin 端向上检查连续的 CN 后缀。对于每个 origin ASN，只要至少一条观测路径的连续 CN 后缀中包含可信运营商 ASN，该 ASN 宣告的前缀就会进入 `china` 集合；遇到第一个非 CN 或国家未知的 ASN 后立即停止，不能跨过境外 transit 再寻找国内运营商。
 
 原有 `exclude_asn` 中可由该规则自然排除的项目已经移除，只保留仍有可信国内路径、但宣告已知境外地址段的 AS142111。
+
+`china` 集合还会读取 AFRINIC、APNIC、ARIN、LACNIC 和 RIPE NCC 的 extended delegated statistics，自动补充登记给中国组织、但所有 RIB 均未观测到具体宣告的 IPv4/IPv6 地址。任意 ASN 一旦宣告其中的地址，BGP 分类会自动接管；登记国家不能证明具体接入运营商，因此该机制不用于 `chinanet`、`cmcc` 等运营商集合。规范化登记输入会保存为隐藏的 `.china.registered.txt` 供审计。设计和数据语义见 [Issue #45 实现说明](docs/issue-45-fallback-prefixes.md)。
 
 可以用下面的命令查看生成的可信 ASN 集合：
 

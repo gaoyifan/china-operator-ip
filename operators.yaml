@@ -15,6 +15,7 @@ operators:
     # AS142111 has trusted domestic paths but originates known foreign prefixes.
     exclude_asn:
       - '142111'
+    registry_fallback_country: 'CN'
   chinanet:
     country: 'CN'
     pattern: '(china ?telecom|chinanet|AS4847 )'
