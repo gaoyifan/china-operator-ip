@@ -28,6 +28,20 @@ jobs:
           key: ${{ runner.os }}-cargo-bin-${{ hashFiles('justfile') }}
           restore-keys: ${{ runner.os }}-cargo-bin-
           path: ~/.cargo/bin
+      - name: Get RIR cache date
+        id: rir-cache-date
+        run: echo "date=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+      - name: Cache RIR delegated statistics
+        uses: actions/cache@v5
+        with:
+          key: ${{ runner.os }}-rir-delegated-${{ steps.rir-cache-date.outputs.date }}
+          restore-keys: ${{ runner.os }}-rir-delegated-
+          path: |
+            delegated-afrinic-extended-latest
+            delegated-apnic-extended-latest
+            delegated-arin-extended-latest
+            delegated-lacnic-extended-latest
+            delegated-ripencc-extended-latest
       - run: just dependency
       - run: cargo test --locked
       - uses: nick-fields/retry@v3

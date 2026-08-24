@@ -32,8 +32,20 @@ prepare_registry registry url:
   set -euo pipefail
 
   outfile="delegated-{{registry}}-extended-latest"
-  aria2c -s 4 -x 4 -q -o "${outfile}" --allow-overwrite=true "{{url}}"
-  echo "INFO> ${outfile} updated ($(wc -l < "${outfile}") records)" >&2
+  download="${outfile}.download"
+  rm -f "${download}" "${download}.aria2"
+
+  if aria2c -s 4 -x 4 -q -o "${download}" --allow-overwrite=true "{{url}}" && [[ -s "${download}" ]]; then
+    mv "${download}" "${outfile}"
+    echo "INFO> ${outfile} updated ($(wc -l < "${outfile}") records)" >&2
+  elif [[ -s "${outfile}" ]]; then
+    rm -f "${download}" "${download}.aria2"
+    echo "WARNING> failed to update ${outfile}; using cached copy ($(wc -l < "${outfile}") records)" >&2
+  else
+    rm -f "${download}" "${download}.aria2"
+    echo "ERROR> failed to update ${outfile} and no cached copy is available" >&2
+    exit 1
+  fi
 
 # Download all RIR delegated statistics
 [parallel]
