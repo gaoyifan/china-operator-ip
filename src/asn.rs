@@ -57,24 +57,15 @@ pub(crate) fn normalize_path(path: &[Asn]) -> AsPath {
     }
 }
 
-pub(crate) fn longest_common_suffix(paths: &[AsPath]) -> AsPath {
-    let Some(first) = paths.first() else {
-        return AsPath::new();
-    };
-    let min_len = paths.iter().map(|path| path.len()).min().unwrap().min(4);
-    let mut suffix = AsPath::new();
-
-    for offset in 1..=min_len {
-        let candidate = first[first.len() - offset];
-        if paths
-            .iter()
-            .all(|path| path[path.len() - offset] == candidate)
-        {
-            suffix.push(candidate);
-        } else {
-            break;
-        }
-    }
+pub(crate) fn longest_common_suffix(left: &[Asn], right: &[Asn]) -> AsPath {
+    let mut suffix: AsPath = left
+        .iter()
+        .rev()
+        .zip(right.iter().rev())
+        .take(4)
+        .take_while(|(left, right)| left == right)
+        .map(|(asn, _)| *asn)
+        .collect();
     suffix.reverse();
     suffix
 }
@@ -153,7 +144,7 @@ pub(crate) fn load_countries(path: &Path) -> std::io::Result<AsnCountries> {
     Ok(countries)
 }
 
-fn load_set(path: &Path) -> std::io::Result<HashSet<Asn>> {
+pub(crate) fn load_set(path: &Path) -> std::io::Result<HashSet<Asn>> {
     let file = File::open(path)?;
     BufReader::new(file)
         .lines()
@@ -206,35 +197,24 @@ mod tests {
 
     #[test]
     fn computes_longest_common_suffix() {
-        let paths = vec![
-            [1, 64512, 13335, 15169]
-                .map(Asn::from)
-                .into_iter()
-                .collect(),
-            [64500, 64512, 13335, 15169]
-                .map(Asn::from)
-                .into_iter()
-                .collect(),
-            [64501, 9999, 13335, 15169]
-                .map(Asn::from)
-                .into_iter()
-                .collect(),
-        ];
+        let a = [64496, 64497, 64498, 64499].map(Asn::from);
+        let b = [64500, 64497, 64498, 64499].map(Asn::from);
+        let c = [64501, 64502, 64498, 64499].map(Asn::from);
+        assert_eq!(longest_common_suffix(&a, &b).as_slice(), &a[1..]);
         assert_eq!(
-            longest_common_suffix(&paths).as_slice(),
-            &[Asn::from(13335), Asn::from(15169)]
+            longest_common_suffix(&longest_common_suffix(&a, &b), &c).as_slice(),
+            &a[2..]
         );
+        assert_eq!(
+            longest_common_suffix(&a, &longest_common_suffix(&b, &c)).as_slice(),
+            &a[2..]
+        );
+        assert!(longest_common_suffix(&[], &a).is_empty());
+        assert!(longest_common_suffix(&a, &[]).is_empty());
+        assert!(longest_common_suffix(&a, &a[..3]).is_empty());
 
-        let long_paths = vec![
-            [10, 20, 30, 40, 50, 60]
-                .map(Asn::from)
-                .into_iter()
-                .collect(),
-        ];
-        assert_eq!(
-            longest_common_suffix(&long_paths).as_slice(),
-            &[Asn::from(30), Asn::from(40), Asn::from(50), Asn::from(60),]
-        );
+        let long = [64496, 64497, 64498, 64499, 64500, 64501].map(Asn::from);
+        assert_eq!(longest_common_suffix(&long, &long).as_slice(), &long[2..]);
     }
 
     #[test]

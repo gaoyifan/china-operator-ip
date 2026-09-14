@@ -3,7 +3,7 @@ mod cache;
 mod classifier;
 mod ip;
 
-use asn::{Asn, DomesticPolicy, foreign_upstream_only, load_countries};
+use asn::{Asn, DomesticPolicy, foreign_upstream_only, load_countries, load_set};
 use cache::CacheKey;
 use clap::{ArgAction, Parser};
 use classifier::ClassifierConfig;
@@ -27,6 +27,10 @@ struct Opts {
 
     #[arg(long, default_value_t = false)]
     origin_only: bool,
+
+    /// Stop shared-upstream attribution at the nearest ASN in this operator set.
+    #[arg(long, value_name = "FILE", conflicts_with = "origin_only")]
+    operator_asn_file: Option<PathBuf>,
 
     #[arg(long, default_value_t = false)]
     cache: bool,
@@ -58,6 +62,18 @@ struct Opts {
 fn main() {
     let opts = Opts::parse();
     let targets: HashSet<Asn> = opts.asns.iter().copied().collect();
+    let operator_asns = opts
+        .operator_asn_file
+        .as_deref()
+        .map(|path| {
+            load_set(path).unwrap_or_else(|err| {
+                panic!(
+                    "failed to load operator ASNs from {}: {err}",
+                    path.display()
+                )
+            })
+        })
+        .unwrap_or_default();
     let domestic_policy = opts.trusted_cn_transit_file.as_deref().map(|trusted_path| {
         let country_path = opts
             .asn_country_file
@@ -73,20 +89,25 @@ fn main() {
         opts.ignore_private_asn,
         opts.origin_only,
         domestic_policy.as_ref().map(DomesticPolicy::fingerprint),
+        &operator_asns,
     );
 
-    let classification = if opts.cache {
-        let path = cache_key.path(&opts.mrt_files);
-        cache::load(&path, cache_key).unwrap_or_else(|| {
-            cache::save(
-                &path,
-                cache_key,
-                classifier::build(&opts.mrt_files, config, domestic_policy.as_ref()),
-            )
-        })
-    } else {
-        classifier::build(&opts.mrt_files, config, domestic_policy.as_ref())
-    };
+    let cache_path = opts.cache.then(|| cache_key.path(&opts.mrt_files));
+    let classification = cache_path
+        .as_deref()
+        .and_then(|path| cache::load(path, cache_key))
+        .unwrap_or_else(|| {
+            let classification = classifier::build(
+                &opts.mrt_files,
+                config,
+                domestic_policy.as_ref(),
+                &operator_asns,
+            );
+            match cache_path {
+                Some(path) => cache::save(&path, cache_key, classification),
+                None => classification,
+            }
+        });
 
     let foreign_upstream_only_asns = match opts.exclude_foreign_upstream_only.as_deref() {
         Some(country) => {

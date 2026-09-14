@@ -44,6 +44,7 @@ jobs:
             delegated-ripencc-extended-latest
       - run: just dependency
       - run: cargo test --locked
+      - run: ruby tests/operators_test.rb
       - uses: nick-fields/retry@v3
         with:
           timeout_minutes: 60

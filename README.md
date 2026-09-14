@@ -44,6 +44,8 @@
 
 *P.S. `china` 采用“可信国内 BGP 分类 + 未宣告 RIR-CN 登记兜底”的组合语义。如果只需要独立基于 RIR 分配数据生成的中国地址集合，可参考 [chnroutes2](https://github.com/misakaio/chnroutes2) 项目。*
 
+运营商列表依据 BGP 路径分类：从 origin 向上检查共同路径后缀，遇到最近的已知运营商后停止。因此，教育网经电信转接的地址仍归教育网，下游网络也可归入其共同上游运营商。同一前缀若由多个 origin ASN 宣告，仍可能进入多个列表；这些列表不保证严格互斥。详细规则见 [分类算法](docs/algorithm.md#processing-steps)。
+
 ## 如何获取数据
 
 ### 方法1：使用预生成结果

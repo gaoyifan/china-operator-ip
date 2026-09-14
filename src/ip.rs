@@ -163,7 +163,7 @@ impl AddressFamily for Ipv6Net {
 struct FamilyTable<N: AddressFamily> {
     prefixes: PrefixMap<N, Origins>,
     announced: IpRange<N>,
-    paths: HashMap<N, HashMap<Asn, Vec<AsPath>>>,
+    common_suffixes: HashMap<N, HashMap<Asn, AsPath>>,
     split_points: BTreeSet<N::Addr>,
 }
 
@@ -172,7 +172,7 @@ impl<N: AddressFamily> Default for FamilyTable<N> {
         Self {
             prefixes: PrefixMap::new(),
             announced: IpRange::new(),
-            paths: HashMap::new(),
+            common_suffixes: HashMap::new(),
             split_points: BTreeSet::new(),
         }
     }
@@ -185,13 +185,7 @@ impl<N: AddressFamily> FamilyTable<N> {
         }
     }
 
-    fn classify(
-        &mut self,
-        net: N,
-        origins: &HashSet<Asn>,
-        path: Option<&AsPath>,
-        collect_paths: bool,
-    ) {
+    fn classify(&mut self, net: N, origins: &HashSet<Asn>, path: Option<&AsPath>) {
         self.prefixes
             .entry(net)
             .or_insert_with(Origins::empty)
@@ -201,10 +195,13 @@ impl<N: AddressFamily> FamilyTable<N> {
             self.split_points.insert(end);
         }
 
-        if collect_paths && let Some(path) = path {
-            let entry = self.paths.entry(net).or_default();
+        if let Some(path) = path {
+            let entry = self.common_suffixes.entry(net).or_default();
             for origin in origins {
-                entry.entry(*origin).or_default().push(path.clone());
+                entry
+                    .entry(*origin)
+                    .and_modify(|suffix| *suffix = longest_common_suffix(suffix, path))
+                    .or_insert_with(|| longest_common_suffix(path, path));
             }
         }
     }
@@ -222,20 +219,29 @@ impl<N: AddressFamily> FamilyTable<N> {
                 None => entry.extend(origins),
             }
         }
-        for (net, origins) in other.paths {
-            let entry = self.paths.entry(net).or_default();
-            for (origin, paths) in origins {
-                entry.entry(origin).or_default().extend(paths);
+        for (net, origins) in other.common_suffixes {
+            let entry = self.common_suffixes.entry(net).or_default();
+            for (origin, suffix) in origins {
+                entry
+                    .entry(origin)
+                    .and_modify(|current| *current = longest_common_suffix(current, &suffix))
+                    .or_insert(suffix);
             }
         }
         self.split_points.extend(other.split_points);
     }
 
-    fn add_shared_upstreams(&mut self) {
-        for (net, origins) in std::mem::take(&mut self.paths) {
+    fn add_shared_upstreams(&mut self, operator_asns: &HashSet<Asn>) {
+        for (net, origins) in std::mem::take(&mut self.common_suffixes) {
             let entry = self.prefixes.entry(net).or_insert_with(Origins::empty);
-            for paths in origins.into_values() {
-                entry.extend(longest_common_suffix(&paths));
+            for suffix in origins.into_values() {
+                // A known operator's transit does not own its downstream space.
+                for asn in suffix.into_iter().rev() {
+                    entry.insert(asn);
+                    if operator_asns.contains(&asn) {
+                        break;
+                    }
+                }
             }
         }
     }
@@ -282,11 +288,10 @@ impl MrtTables {
         prefix: IpNet,
         origins: &HashSet<Asn>,
         path: Option<&AsPath>,
-        collect_paths: bool,
     ) {
         match prefix {
-            IpNet::V4(net) => self.families.v4.classify(net, origins, path, collect_paths),
-            IpNet::V6(net) => self.families.v6.classify(net, origins, path, collect_paths),
+            IpNet::V4(net) => self.families.v4.classify(net, origins, path),
+            IpNet::V6(net) => self.families.v6.classify(net, origins, path),
         }
     }
 
@@ -295,9 +300,9 @@ impl MrtTables {
         self.families.v6.merge(other.families.v6, allowed_origins);
     }
 
-    pub(crate) fn add_shared_upstreams(&mut self) {
-        self.families.v4.add_shared_upstreams();
-        self.families.v6.add_shared_upstreams();
+    pub(crate) fn add_shared_upstreams(&mut self, operator_asns: &HashSet<Asn>) {
+        self.families.v4.add_shared_upstreams(operator_asns);
+        self.families.v6.add_shared_upstreams(operator_asns);
     }
 
     pub(crate) fn into_ranges(self) -> (AsnRanges, IpRanges) {
@@ -381,6 +386,91 @@ mod tests {
             .get_lpm(&"10.1.2.1/32".parse().unwrap())
             .unwrap();
         assert!(origins.is_empty());
+    }
+
+    #[test]
+    fn operator_origin_does_not_leak_to_its_transit() {
+        let origin = Asn::from(64496);
+        let transit = Asn::from(64497);
+        let mut tables = MrtTables::default();
+        for prefix in ["192.0.2.0/24", "2001:db8::/32"] {
+            tables.classify(
+                prefix.parse().unwrap(),
+                &HashSet::from([origin]),
+                Some(&[transit, origin].into_iter().collect()),
+            );
+        }
+        tables.add_shared_upstreams(&HashSet::from([transit, origin]));
+        let (ranges, _) = tables.into_ranges();
+        assert_eq!(
+            ranges
+                .select(&HashSet::from([origin]), &HashSet::new())
+                .lines(),
+            ["192.0.2.0/24", "2001:db8::/32"]
+        );
+        assert!(!ranges.contains(&transit));
+    }
+
+    #[test]
+    fn downstream_space_stops_at_the_nearest_common_operator() {
+        let origin = Asn::from(64496);
+        let nearest_operator = Asn::from(64497);
+        let transit = Asn::from(64498);
+        let mut tables = MrtTables::default();
+        for peer in [64499, 64500] {
+            let mut rib = MrtTables::default();
+            for prefix in ["192.0.2.0/24", "2001:db8::/32"] {
+                rib.classify(
+                    prefix.parse().unwrap(),
+                    &HashSet::from([origin]),
+                    Some(
+                        &[peer.into(), transit, nearest_operator, origin]
+                            .into_iter()
+                            .collect(),
+                    ),
+                );
+            }
+            tables.merge(rib, None);
+        }
+        tables.add_shared_upstreams(&HashSet::from([transit, nearest_operator]));
+        let (ranges, _) = tables.into_ranges();
+        for asn in [nearest_operator, origin] {
+            assert_eq!(
+                ranges
+                    .select(&HashSet::from([asn]), &HashSet::new())
+                    .lines(),
+                ["192.0.2.0/24", "2001:db8::/32"]
+            );
+        }
+        assert!(!ranges.contains(&transit));
+    }
+
+    #[test]
+    fn multiple_operator_origins_are_preserved() {
+        let origins = [Asn::from(64496), Asn::from(64497)];
+        let transits = [Asn::from(64498), Asn::from(64499)];
+        let mut tables = MrtTables::default();
+        for (origin, transit) in origins.into_iter().zip(transits) {
+            tables.classify(
+                "192.0.2.0/24".parse().unwrap(),
+                &HashSet::from([origin]),
+                Some(&[transit, origin].into_iter().collect()),
+            );
+        }
+        let operators = origins.into_iter().chain(transits).collect();
+        tables.add_shared_upstreams(&operators);
+        let (ranges, _) = tables.into_ranges();
+        for origin in origins {
+            assert_eq!(
+                ranges
+                    .select(&HashSet::from([origin]), &HashSet::new())
+                    .lines(),
+                ["192.0.2.0/24"]
+            );
+        }
+        for transit in transits {
+            assert!(!ranges.contains(&transit));
+        }
     }
 
     fn fallback_result(announced: &[&str], fallbacks: &[&str]) -> IpRanges {

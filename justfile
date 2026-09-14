@@ -196,6 +196,21 @@ trusted_transit_asn operator:
 
   trusted_asns.sort_by(&:to_i).each { |asn| puts asn }
 
+# Print all known operator ASNs used as shared-upstream boundaries
+operator_asns:
+  #!/usr/bin/env ruby
+  require "set"
+  require "yaml"
+
+  asns = Set.new
+  YAML.load_file("operators.yaml").fetch("operators").each do |operator, cfg|
+    next if cfg.fetch("origin_only", false)
+    output = IO.popen(["just", "get_asn_candidates", operator], &:read)
+    abort("Failed to get operator ASNs for #{operator}") unless $?.success?
+    asns.merge(output.split)
+  end
+  asns.sort_by(&:to_i).each { |asn| puts asn }
+
 # Generate IP lists for a single operator
 gen operator:
   #!/usr/bin/env ruby
@@ -212,6 +227,13 @@ gen operator:
   abort("No rib-*.gz or rib-*.bz2 files found. Run 'just prepare_ribs' first.") if ribs.empty?
   classifier = ["target/release/china-operator-ip", "--ignore-private-asn", "--cache"]
   classifier << "--origin-only" if origin_only
+  unless origin_only
+    operator_asns = IO.popen(["just", "operator_asns"], &:read)
+    abort("Failed to get operator ASNs") unless $?.success?
+    operator_asn_path = "result/.operator-asns.txt"
+    File.write(operator_asn_path, operator_asns)
+    classifier += ["--operator-asn-file", operator_asn_path]
+  end
   if country = cfg["registry_fallback_country"]
     registered = IO.popen(["just", "registry_prefixes", country], &:read)
     abort("Failed to get registered prefixes for #{country}") unless $?.success?

@@ -1,18 +1,21 @@
+use crate::asn::Asn;
 use crate::classifier::Classification;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::collections::hash_map::DefaultHasher;
 use std::fs::File;
 use std::hash::{Hash, Hasher};
 use std::io::{BufReader, BufWriter};
 use std::path::{Path, PathBuf};
 
-const FORMAT_VERSION: u8 = 5;
+const FORMAT_VERSION: u8 = 6;
 
 #[derive(Clone, Copy, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub(crate) struct CacheKey {
     ignore_private_asn: bool,
     origin_only: bool,
     domestic_policy_fingerprint: Option<u64>,
+    operator_asns_fingerprint: u64,
 }
 
 impl CacheKey {
@@ -20,11 +23,17 @@ impl CacheKey {
         ignore_private_asn: bool,
         origin_only: bool,
         domestic_policy_fingerprint: Option<u64>,
+        operator_asns: &HashSet<Asn>,
     ) -> Self {
+        let mut operators: Vec<Asn> = operator_asns.iter().copied().collect();
+        operators.sort_unstable();
+        let mut hasher = DefaultHasher::new();
+        operators.hash(&mut hasher);
         Self {
             ignore_private_asn,
             origin_only,
             domestic_policy_fingerprint,
+            operator_asns_fingerprint: hasher.finish(),
         }
     }
 
@@ -76,8 +85,8 @@ mod tests {
     fn cache_path_changes_when_origin_only_changes() {
         let mrt_files = vec![PathBuf::from("rib-a.gz"), PathBuf::from("rib-b.gz")];
         assert_ne!(
-            CacheKey::new(false, false, None).path(&mrt_files),
-            CacheKey::new(false, true, None).path(&mrt_files)
+            CacheKey::new(false, false, None, &HashSet::new()).path(&mrt_files),
+            CacheKey::new(false, true, None, &HashSet::new()).path(&mrt_files)
         );
     }
 
@@ -85,12 +94,27 @@ mod tests {
     fn cache_path_changes_with_domestic_policy() {
         let mrt_files = vec![PathBuf::from("rib-a.gz")];
         assert_ne!(
-            CacheKey::new(false, true, None).path(&mrt_files),
-            CacheKey::new(false, true, Some(1)).path(&mrt_files)
+            CacheKey::new(false, true, None, &HashSet::new()).path(&mrt_files),
+            CacheKey::new(false, true, Some(1), &HashSet::new()).path(&mrt_files)
         );
         assert_ne!(
-            CacheKey::new(false, true, Some(1)).path(&mrt_files),
-            CacheKey::new(false, true, Some(2)).path(&mrt_files)
+            CacheKey::new(false, true, Some(1), &HashSet::new()).path(&mrt_files),
+            CacheKey::new(false, true, Some(2), &HashSet::new()).path(&mrt_files)
+        );
+    }
+
+    #[test]
+    fn cache_path_tracks_operator_asns_independently_of_order() {
+        let mrt_files = vec![PathBuf::from("rib-a.gz")];
+        let operators = HashSet::from([64496.into(), 64497.into()]);
+        let reversed = HashSet::from([64497.into(), 64496.into()]);
+        assert_eq!(
+            CacheKey::new(false, false, None, &operators).path(&mrt_files),
+            CacheKey::new(false, false, None, &reversed).path(&mrt_files)
+        );
+        assert_ne!(
+            CacheKey::new(false, false, None, &operators).path(&mrt_files),
+            CacheKey::new(false, false, None, &HashSet::from([64496.into()])).path(&mrt_files)
         );
     }
 }

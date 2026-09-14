@@ -58,6 +58,7 @@ pub(crate) fn build(
     mrt_files: &[PathBuf],
     config: ClassifierConfig,
     domestic_policy: Option<&DomesticPolicy>,
+    operator_asns: &HashSet<Asn>,
 ) -> Classification {
     let parsed: Vec<ParsedMrtData> = mrt_files
         .par_iter()
@@ -81,7 +82,7 @@ pub(crate) fn build(
     }
 
     if !config.origin_only {
-        tables.add_shared_upstreams();
+        tables.add_shared_upstreams(operator_asns);
     }
     let (ranges, announced) = tables.into_ranges();
     Classification {
@@ -149,8 +150,7 @@ fn process_mrt_file(
         tables.classify(
             elem.prefix.prefix,
             &origin_asns,
-            path.as_ref(),
-            !config.origin_only,
+            path.as_ref().filter(|_| !config.origin_only),
         );
     }
 
@@ -158,5 +158,150 @@ fn process_mrt_file(
         tables,
         domestic_origins,
         direct_upstreams,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bgpkit_parser::{
+        encoder::MrtRibEncoder,
+        models::{AsPath, BgpElem},
+    };
+
+    #[test]
+    fn rib_classification_stops_at_the_nearest_operator() {
+        let origin = 64496;
+        let nearest_operator = 64497;
+        let transit = 64498;
+        let peer = 64499;
+        let mut encoder = MrtRibEncoder::new();
+        // Synthetic topology with AS prepending; no live routing data is used.
+        let elem = BgpElem {
+            timestamp: 1.0,
+            peer_ip: "192.0.2.1".parse().unwrap(),
+            peer_asn: peer.into(),
+            prefix: "198.51.100.0/24".parse().unwrap(),
+            as_path: Some(AsPath::from_sequence([
+                peer,
+                transit,
+                nearest_operator,
+                origin,
+                origin,
+            ])),
+            ..Default::default()
+        };
+        encoder.process_elem(&elem);
+        let path = std::env::temp_dir().join(format!(
+            "china-operator-ip-nearest-operator-{}.mrt",
+            std::process::id()
+        ));
+        std::fs::write(&path, encoder.export_bytes()).unwrap();
+        let config = ClassifierConfig {
+            ignore_private_asn: true,
+            origin_only: false,
+        };
+        let classification = build(
+            std::slice::from_ref(&path),
+            config,
+            None,
+            &HashSet::from([transit.into(), nearest_operator.into()]),
+        );
+        let origin_only = build(
+            std::slice::from_ref(&path),
+            ClassifierConfig {
+                origin_only: true,
+                ..config
+            },
+            None,
+            &HashSet::new(),
+        );
+        std::fs::remove_file(path).unwrap();
+
+        for asn in [origin, nearest_operator] {
+            assert_eq!(
+                classification
+                    .result(&HashSet::from([asn.into()]), &HashSet::new(), &[])
+                    .lines(),
+                ["198.51.100.0/24"]
+            );
+        }
+        assert!(
+            classification
+                .result(&HashSet::from([transit.into()]), &HashSet::new(), &[])
+                .lines()
+                .is_empty()
+        );
+        assert_eq!(
+            origin_only
+                .result(&HashSet::from([origin.into()]), &HashSet::new(), &[])
+                .lines(),
+            ["198.51.100.0/24"]
+        );
+        assert!(
+            origin_only
+                .result(
+                    &HashSet::from([nearest_operator.into()]),
+                    &HashSet::new(),
+                    &[]
+                )
+                .lines()
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn divergent_operators_across_ribs_are_not_shared_upstreams() {
+        let origin = 64496;
+        let operators = [64497, 64498];
+        let mut paths = Vec::new();
+        // The second RIB removes the common operator; the third must not restore it.
+        for (index, observed_operators) in [&operators[..1], operators.as_slice(), &operators[..1]]
+            .into_iter()
+            .enumerate()
+        {
+            let mut encoder = MrtRibEncoder::new();
+            for (peer, &operator) in observed_operators.iter().enumerate() {
+                encoder.process_elem(&BgpElem {
+                    timestamp: 1.0,
+                    peer_ip: std::net::Ipv4Addr::new(192, 0, 2, peer as u8 + 1).into(),
+                    peer_asn: operator.into(),
+                    prefix: "198.51.100.0/24".parse().unwrap(),
+                    as_path: Some(AsPath::from_sequence([operator, origin])),
+                    ..Default::default()
+                });
+            }
+            let path = std::env::temp_dir().join(format!(
+                "china-operator-ip-divergent-operators-{}-{index}.mrt",
+                std::process::id()
+            ));
+            std::fs::write(&path, encoder.export_bytes()).unwrap();
+            paths.push(path);
+        }
+        let operator_asns = operators.into_iter().map(Asn::from).collect();
+        let classification = build(
+            &paths,
+            ClassifierConfig {
+                ignore_private_asn: true,
+                origin_only: false,
+            },
+            None,
+            &operator_asns,
+        );
+        for path in paths {
+            std::fs::remove_file(path).unwrap();
+        }
+        assert_eq!(
+            classification
+                .result(&HashSet::from([origin.into()]), &HashSet::new(), &[])
+                .lines(),
+            ["198.51.100.0/24"]
+        );
+        assert!(
+            classification
+                .result(&operator_asns, &HashSet::new(), &[])
+                .lines()
+                .is_empty()
+        );
     }
 }

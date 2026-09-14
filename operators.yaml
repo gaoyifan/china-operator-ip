@@ -1,7 +1,8 @@
 operators:
   cernet:
     country: 'CN'
-    pattern: '(cngi|cernet)'
+    # CNGI also includes commercial operators; AS23911 is CERNET's Beijing IX.
+    pattern: '(cernet|^AS23911\b)'
   china:
     country: 'CN'
     pattern: ''
@@ -18,7 +19,10 @@ operators:
     registry_fallback_country: 'CN'
   chinanet:
     country: 'CN'
-    pattern: '(china ?telecom|chinanet|AS4847 )'
+    pattern: '(china ?telecom|chinanet|^AS(4847|38035|38270)\b)'
+    # The legacy CHINANET description of AS18344 refers to a Unicom network.
+    exclude_asn:
+      - '18344'
   cmcc:
     country: 'CN'
     pattern: '(china mobile|cmnet|tietong|CHINA RAILWAY)'
