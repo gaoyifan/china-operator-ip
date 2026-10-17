@@ -1,4 +1,5 @@
 require "fileutils"
+require "json"
 require "open3"
 require "tmpdir"
 
@@ -21,6 +22,7 @@ Dir.mktmpdir("china-operator-ip-operators") do |dir|
     AS38270 CNGI-CI-AP - AS number for CNGI core network which is composed of, CN
     AS59265 CT-CNGI - China telecom - China Next Generation Internet, CN
     AS4262 CERNET-ASN-BLOCK - California Education and Research Federation Network, US
+    AS45102 ALIBABA-CN-NET - Alibaba (US) Technology Co., Ltd., CN
   ASN
   expected = {
     "cernet" => %w[4538 23910 23911],
@@ -38,5 +40,35 @@ Dir.mktmpdir("china-operator-ip-operators") do |dir|
   output, status = Open3.capture2("just", "operator_asns", chdir: dir)
   abort("Failed to get operator boundaries") unless status.success?
   abort("Incorrect operator boundaries") unless output.split == expected.values.flatten.sort_by(&:to_i)
+
+  # Exercise the generation recipe offline; Rust integration tests cover subtraction.
+  File.write("#{dir}/rib-fixture.gz", "")
+  %w[afrinic apnic arin lacnic ripencc].each do |registry|
+    File.write("#{dir}/delegated-#{registry}-extended-latest",
+      "#{registry}|CN|ipv4|192.0.2.0|256|20260101|allocated\n")
+  end
+  FileUtils.mkdir_p("#{dir}/target/release")
+  classifier = "#{dir}/target/release/china-operator-ip"
+  File.write(classifier, <<~RUBY)
+    #!/usr/bin/env ruby
+    require "json"
+    File.write("classifier-args.json", JSON.generate(ARGV))
+    puts "192.0.2.0/24"
+  RUBY
+  FileUtils.chmod(0755, classifier)
+  %w[china chinanet].each do |operator|
+    _out, err, status = Open3.capture3("just", "gen", operator, chdir: dir)
+    abort("Failed to generate #{operator}: #{err}") unless status.success?
+    args = JSON.parse(File.read("#{dir}/classifier-args.json"))
+    index = args.index("--exclude-prefix-file")
+    if operator == "china"
+      abort("Missing prefix exclusions") unless index
+      prefixes = File.readlines(File.join(dir, args[index + 1]), chomp: true)
+      abort("Missing Singapore exclusion") unless prefixes.include?("47.236.0.0/16")
+      abort("Excluded the entire Alibaba ASN") unless args.include?("45102")
+    else
+      abort("Unexpected exclusions for #{operator}") if index
+    end
+  end
 end
 puts "Operator ASN classification checks passed"

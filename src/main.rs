@@ -38,6 +38,10 @@ struct Opts {
     #[arg(long, value_name = "FILE")]
     fallback_prefix_file: Option<PathBuf>,
 
+    /// Subtract these CIDRs after BGP classification and registration fallbacks.
+    #[arg(long, value_name = "FILE")]
+    exclude_prefix_file: Option<PathBuf>,
+
     #[arg(long, value_name = "COUNTRY")]
     exclude_foreign_upstream_only: Option<String>,
 
@@ -164,10 +168,21 @@ fn main() {
         })
         .unwrap_or_default();
     let excluded: HashSet<Asn> = foreign_upstream_only_asns.into_iter().collect();
-    for line in classification
-        .result(&targets, &excluded, &fallback_prefixes)
-        .lines()
-    {
+    let excluded_prefixes = opts
+        .exclude_prefix_file
+        .as_deref()
+        .map(|path| {
+            load_prefixes(path).unwrap_or_else(|err| {
+                panic!(
+                    "failed to load excluded prefixes from {}: {err}",
+                    path.display()
+                )
+            })
+        })
+        .unwrap_or_default();
+    let mut result = classification.result(&targets, &excluded, &fallback_prefixes);
+    result.exclude_prefixes(&excluded_prefixes);
+    for line in result.lines() {
         println!("{line}");
     }
 }

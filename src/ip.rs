@@ -67,6 +67,20 @@ impl IpRanges {
         lines.extend(sorted(&self.v6));
         lines
     }
+
+    pub(crate) fn exclude_prefixes(&mut self, prefixes: &[IpNet]) {
+        if prefixes.is_empty() {
+            return;
+        }
+        let mut excluded = Self::default();
+        for prefix in prefixes {
+            excluded.add_prefix(*prefix);
+        }
+        excluded.simplify();
+        self.v4 = self.v4.exclude(&excluded.v4);
+        self.v6 = self.v6.exclude(&excluded.v6);
+        self.simplify();
+    }
 }
 
 impl AsnRanges {

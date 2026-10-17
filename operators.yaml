@@ -16,6 +16,10 @@ operators:
     # AS142111 has trusted domestic paths but originates known foreign prefixes.
     exclude_asn:
       - '142111'
+    # Alibaba's Singapore range; retain other prefixes originated by AS45102.
+    # https://ipinfo.io/ips/47.236.0.0/16
+    exclude_prefixes:
+      - '47.236.0.0/16'
     registry_fallback_country: 'CN'
   chinanet:
     country: 'CN'

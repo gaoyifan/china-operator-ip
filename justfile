@@ -227,6 +227,11 @@ gen operator:
   abort("No rib-*.gz or rib-*.bz2 files found. Run 'just prepare_ribs' first.") if ribs.empty?
   classifier = ["target/release/china-operator-ip", "--ignore-private-asn", "--cache"]
   classifier << "--origin-only" if origin_only
+  if cfg.fetch("exclude_prefixes", []).any?
+    excluded_path = "result/.#{operator}.excluded.txt"
+    File.write(excluded_path, cfg.fetch("exclude_prefixes").join("\n") + "\n")
+    classifier += ["--exclude-prefix-file", excluded_path]
+  end
   unless origin_only
     operator_asns = IO.popen(["just", "operator_asns"], &:read)
     abort("Failed to get operator ASNs") unless $?.success?
