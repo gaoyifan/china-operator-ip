@@ -43,11 +43,11 @@ The built-in BGP classifier reads one or more MRT/RIB files and classifies IPv4/
    Each CIDR from `--fallback-prefix-file` contributes only its difference from the complete observed announcement set. This gives BGP higher priority than fallback data: `result = classified ∪ (fallback − announced)`. Any announcement, regardless of ASN or classification, blocks fallback coverage for that space.
 
 8) **Finalize result**
-   For the remaining requested ASNs, the collected ranges and unannounced fallbacks are merged and simplified, then emitted in sorted order (v4 then v6).
+   For the remaining requested ASNs, the collected ranges and unannounced fallbacks are merged and simplified. Optional CIDRs from `--exclude-prefix-file` are then subtracted from this union, including any covering aggregates. `just gen` derives this file from the operator's `exclude_prefixes` setting and saves it as `result/.<operator>.excluded.txt`. Exclusions take precedence over both BGP and registration fallback coverage without excluding an entire ASN. The result is emitted in sorted order (v4 then v6).
 
 ## Caching
 
-When `--cache` is enabled, the computed ASN→range maps, complete observed announcement sets, and origin→direct-upstream map are serialized to a bincode file keyed by input file list, `ignore_private_asn`, `origin_only`, the trusted-transit policy fingerprint, and the sorted operator ASN set fingerprint. The fallback file is read after cache loading and therefore does not affect the key. Subsequent runs reuse the cache when the key matches.
+When `--cache` is enabled, the computed ASN→range maps, complete observed announcement sets, and origin→direct-upstream map are serialized to a bincode file keyed by input file list, `ignore_private_asn`, `origin_only`, the trusted-transit policy fingerprint, and the sorted operator ASN set fingerprint. The fallback and prefix exclusion files are read after cache loading and therefore do not affect the key. Subsequent runs reuse the cache when the key matches.
 
 ## Modules
 

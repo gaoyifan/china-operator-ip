@@ -98,6 +98,8 @@ just
 
 原有 `exclude_asn` 中可由该规则自然排除的项目已经移除，只保留仍有可信国内路径、但宣告已知境外地址段的 AS142111。
 
+对于同一 ASN 中需要单独排除的境外网段，可在 `operators.yaml` 对应集合下配置 `exclude_prefixes`。例如，`china` 排除位于新加坡的 `47.236.0.0/16`（[IPinfo 网段信息](https://ipinfo.io/ips/47.236.0.0/16)），而不排除 AS45102 的所有地址。排除项在 BGP 分类和登记兜底合并后执行，因此也会从覆盖它的聚合网段中扣除，且不会被兜底重新加入。输入保存为 `.china.excluded.txt`；直接调用分类器时可使用 `--exclude-prefix-file FILE`。修改排除列表无需清空 BGP 缓存。
+
 `china` 集合还会读取 AFRINIC、APNIC、ARIN、LACNIC 和 RIPE NCC 的 extended delegated statistics，自动补充登记给中国组织、但所有 RIB 均未观测到具体宣告的 IPv4/IPv6 地址。任意 ASN 一旦宣告其中的地址，BGP 分类会自动接管；登记国家不能证明具体接入运营商，因此该机制不用于 `chinanet`、`cmcc` 等运营商集合。规范化登记输入会保存为隐藏的 `.china.registered.txt` 供审计。设计和数据语义见 [Issue #45 实现说明](docs/issue-45-fallback-prefixes.md)。
 
 可以用下面的命令查看生成的可信 ASN 集合：
